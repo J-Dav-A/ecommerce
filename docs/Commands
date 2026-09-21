@@ -1,0 +1,328 @@
+GUÍA DE GIT — PROYECTO ECOMMERCE
+
+Ramas del equipo: - main - feature/erwin - feature/juan
+
+NOTA: Ejecuta los comandos desde la carpeta raíz del proyecto.
+
+1. VER EN QUÉ RAMA ESTOY
+
+git branch
+
+La rama marcada con * es la rama actual.
+
+También:
+
+git branch –show-current
+
+Y para ver el estado:
+
+git status
+
+2. CAMBIAR DE RAMA
+
+git checkout main git checkout feature/erwin git checkout feature/juan
+
+Forma moderna:
+
+git switch main git switch feature/erwin git switch feature/juan
+
+3. ACTUALIZAR MAIN
+
+git checkout main git pull origin main
+
+Esto trae los cambios de GitHub a la rama main local.
+
+4. CREAR UNA RAMA NUEVA
+
+Primero conviene estar actualizado en main:
+
+git checkout main git pull origin main
+
+Crear la rama y cambiarse a ella:
+
+git checkout -b feature/nombre-del-caso
+
+Ejemplo:
+
+git checkout -b feature/publicar-producto
+
+5. REVISAR CAMBIOS
+
+git status
+
+Muestra archivos modificados, nuevos o eliminados.
+
+6. AGREGAR CAMBIOS
+
+Un archivo:
+
+git add ruta/al/archivo.java
+
+Todos los cambios:
+
+git add .
+
+IMPORTANTE: git add NO hace commit y NO sube nada a GitHub. Solo prepara
+los cambios para el commit.
+
+7. REVISAR LO PREPARADO
+
+git diff
+
+Ver los cambios preparados:
+
+git diff –staged
+
+8. HACER COMMIT
+
+git commit -m “mensaje claro del cambio”
+
+Ejemplos:
+
+git commit -m “crear caso de uso PublicarProducto” git commit -m
+“agregar repositorio de ofertas”
+
+El commit guarda el cambio en el historial LOCAL.
+
+9. VER HISTORIAL
+
+git log –oneline
+
+Historial con ramas:
+
+git log –oneline –graph –decorate –all
+
+10. SUBIR MI RAMA A GITHUB
+
+Primera vez:
+
+git push -u origin feature/erwin
+
+Para Juan:
+
+git push -u origin feature/juan
+
+Después de configurar el seguimiento:
+
+git push
+
+IMPORTANTE: git push NO significa que los cambios estén en main. Solo
+sube los commits de la rama actual al remoto.
+
+11. TRAER CAMBIOS DE MAIN A MI RAMA
+
+Si alguien agregó cambios a main:
+
+git checkout main git pull origin main git checkout feature/erwin git
+merge main git push
+
+Para Juan:
+
+git checkout main git pull origin main git checkout feature/juan git
+merge main git push
+
+Así la rama del integrante incorpora lo que ya existe en main.
+
+12. HACER MERGE DE UNA RAMA A MAIN
+
+Ejemplo: integrar feature/erwin.
+
+Primero asegurarse de que main esté actualizado:
+
+git checkout main git pull origin main
+
+Integrar la rama:
+
+git merge feature/erwin
+
+Si no hay conflictos:
+
+git push origin main
+
+IMPORTANTE: git merge integra los commits de una rama en la rama actual.
+
+13. FLUJO COMPLETO PARA TRABAJAR
+
+Antes de comenzar:
+
+git checkout main git pull origin main git checkout feature/erwin git
+merge main
+
+Trabajar en IntelliJ.
+
+Después:
+
+git status git add . git commit -m “descripcion clara del cambio” git
+push origin feature/erwin
+
+14. FLUJO COMPLETO PARA JUAN
+
+git checkout main git pull origin main git checkout feature/juan git
+merge main
+
+Trabajar.
+
+Después:
+
+git status git add . git commit -m “descripcion clara del cambio” git
+push origin feature/juan
+
+15. SI APARECE UN CONFLICTO EN UN MERGE
+
+Primero:
+
+git status
+
+Git mostrará los archivos con conflicto.
+
+Abrirlos en IntelliJ.
+
+Puede aparecer algo como:
+
+<<<<<<< HEAD código de una rama ======= código de la otra rama >>>>>>>
+feature/erwin
+
+Resolver manualmente qué código debe quedar.
+
+Guardar el archivo.
+
+Después:
+
+git add ruta/al/archivo.java
+
+Cuando todos los conflictos estén resueltos:
+
+git status
+
+Finalizar:
+
+git commit -m “resolver conflicto de merge”
+
+Y subir:
+
+git push
+
+16. CANCELAR UN MERGE
+
+Si el merge todavía está en proceso y se quiere cancelar:
+
+git merge –abort
+
+Esto devuelve el estado anterior al merge.
+
+17. DESCARTAR CAMBIOS NO COMMITTEADOS
+
+Un archivo:
+
+git restore ruta/al/archivo.java
+
+Todos:
+
+git restore .
+
+ATENCIÓN: Esto elimina cambios locales que todavía no están guardados en
+un commit.
+
+18. QUITAR UN ARCHIVO DEL STAGING
+
+git restore –staged ruta/al/archivo.java
+
+Esto NO borra el archivo. Solo lo saca del staging.
+
+19. ELIMINAR UNA RAMA LOCAL
+
+git branch -d feature/nombre
+
+Forzar:
+
+git branch -D feature/nombre
+
+Usar -D con cuidado porque fuerza la eliminación.
+
+20. ELIMINAR UNA RAMA REMOTA
+
+git push origin –delete feature/nombre
+
+21. VER TODAS LAS RAMAS
+
+Locales:
+
+git branch
+
+Locales y remotas:
+
+git branch -a
+
+22. DESCARGAR INFORMACIÓN DEL REMOTO SIN HACER MERGE
+
+git fetch origin
+
+Esto actualiza la información de las ramas remotas sin modificar
+directamente la rama actual.
+
+23. DIFERENCIA ENTRE LOS COMANDOS
+
+git add Prepara cambios para el siguiente commit.
+
+git commit Guarda los cambios en el historial local.
+
+git push Sube commits al repositorio remoto.
+
+git pull Trae cambios del remoto y los integra en la rama actual.
+
+git fetch Trae información del remoto sin integrar los cambios.
+
+git merge Integra una rama dentro de la rama actual.
+
+git status Muestra el estado del proyecto.
+
+git log Muestra el historial.
+
+24. EJEMPLO REAL DEL PROYECTO
+
+Ramas:
+
+main feature/erwin feature/juan
+
+Erwin termina un cambio:
+
+git checkout feature/erwin git add . git commit -m “crear caso de uso
+PublicarProducto” git push origin feature/erwin
+
+Para integrar Erwin en main:
+
+git checkout main git pull origin main git merge feature/erwin git push
+origin main
+
+Después Juan actualiza su rama:
+
+git checkout feature/juan git pull origin feature/juan git merge main
+git push origin feature/juan
+
+Ahora Juan tiene en su rama lo que ya está en main.
+
+25. REGLA PRÁCTICA DEL EQUIPO
+
+ANTES DE TRABAJAR:
+
+git checkout main git pull origin main git checkout feature/mi-rama git
+merge main
+
+DESPUÉS DE TRABAJAR:
+
+git status git add . git commit -m “descripcion del cambio” git push
+
+PARA INTEGRAR A MAIN:
+
+git checkout main git pull origin main git merge feature/mi-rama git
+push origin main
+
+26. SI NO SÉ QUÉ ESTÁ PASANDO
+
+Ejecutar:
+
+git branch –show-current git status git log –oneline –graph –decorate
+–all
+
+Estos tres comandos permiten saber: - en qué rama estoy; - qué cambios
+tengo; - cómo está el historial de ramas y commits.

@@ -21,7 +21,7 @@ class LicenciaDigitalTest {
 
     @Test
     void noDebePermitirCrearUnaLicenciaConCeroActivaciones() {
-        // Act & Assert
+        // Act & Assert -> el Arrange no es necesario porque se pone directamente en el assertThrows
         assertThrows(ReglaDominioException.class, () -> new LicenciaDigital(0, false));
     }
 }

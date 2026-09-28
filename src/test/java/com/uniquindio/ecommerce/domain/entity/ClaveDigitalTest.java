@@ -19,8 +19,8 @@ class ClaveDigitalTest {
     void dosClavesConElMismoIdSonLaMismaAunqueTenganDatosDistintos() {
         // Arrange
         UUID mismoId = UUID.randomUUID();
-        ClaveDigital clave1 = new ClaveDigital(mismoId, "AAAA-1111", new LicenciaDigital(1, false));
-        ClaveDigital clave2 = new ClaveDigital(mismoId, "BBBB-2222", new LicenciaDigital(3, true));
+        ClaveDigital clave1 = ClaveDigital.crear(mismoId, "AAAA-1111", new LicenciaDigital(1, false));
+        ClaveDigital clave2 = ClaveDigital.crear(mismoId, "BBBB-2222", new LicenciaDigital(3, true));
 
         // Act & Assert
         assertEquals(clave1, clave2);
@@ -29,7 +29,7 @@ class ClaveDigitalTest {
     @Test
     void noDebePermitirAsignarUnaClaveQueYaFueAsignada() {
         // Arrange
-        ClaveDigital clave = new ClaveDigital(UUID.randomUUID(), "CCCC-3333", new LicenciaDigital(1, false));
+        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), "CCCC-3333", new LicenciaDigital(1, false));
         clave.asignar(UUID.randomUUID(), Instant.now());
 
         // Act & Assert
@@ -41,7 +41,7 @@ class ClaveDigitalTest {
     @Test
     void noDebeReembolsarUnaClaveCanjeadaYElEstadoNoDebeCambiar() {
         // Arrange
-        ClaveDigital clave = new ClaveDigital(UUID.randomUUID(), "DDDD-4444", new LicenciaDigital(1, false));
+        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), "DDDD-4444", new LicenciaDigital(1, false));
         clave.asignar(UUID.randomUUID(), Instant.now());
         clave.canjear();
 

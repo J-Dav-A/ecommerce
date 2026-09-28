@@ -18,67 +18,124 @@ public class ClaveDigital {
     private UUID compradorId;
     private Instant fechaAsignacion;
 
-    public ClaveDigital(UUID id, String codigo, LicenciaDigital licencia) {
-        if (id == null) {
-            throw new ReglaDominioException("La clave digital requiere un identificador.");
-        }
-        if (codigo == null || codigo.isBlank()) {
-            throw new ReglaDominioException("El código de la clave no puede estar vacío.");
-        }
-        if (licencia == null) {
-            throw new ReglaDominioException("La clave debe tener una licencia.");
-        }
+    private ClaveDigital(UUID id, String codigo, LicenciaDigital licencia) {
         this.id = id;
         this.codigo = codigo;
         this.licencia = licencia;
         this.estado = EstadoClaveDigital.DISPONIBLE;
     }
 
+    public static ClaveDigital crear(UUID id, String codigo, LicenciaDigital licencia) {
+
+        if (id == null) {
+            throw new ReglaDominioException("La clave digital requiere un identificador.");
+        }
+
+        if (codigo == null || codigo.isBlank()) {
+            throw new ReglaDominioException("El código de la clave no puede estar vacío.");
+        }
+
+        if (licencia == null) {
+            throw new ReglaDominioException("La clave debe tener una licencia.");
+        }
+
+        return new ClaveDigital(id, codigo, licencia);
+    }
+
     /** regla 2 solo una clave DISPONIBLE puede asignarse y una sola vez */
     public void asignar(UUID compradorId, Instant ahora) {
+
         if (compradorId == null) {
             throw new ReglaDominioException("Debe indicarse el comprador");
         }
-        if (estado != EstadoClaveDigital.DISPONIBLE) {
-            throw new ReglaDominioException("La clave ya fue asignada y no puede volver a comercializarse");
+
+        if (ahora == null) {
+            throw new ReglaDominioException("Debe indicarse la fecha de asignación");
         }
+
+        if (estado != EstadoClaveDigital.DISPONIBLE) {
+            throw new ReglaDominioException(
+                    "La clave ya fue asignada y no puede volver a comercializarse"
+            );
+        }
+
         this.compradorId = compradorId;
         this.fechaAsignacion = ahora;
         this.estado = EstadoClaveDigital.ASIGNADA;
     }
 
     public void canjear() {
+
         if (estado != EstadoClaveDigital.ASIGNADA) {
-            throw new ReglaDominioException("Solo una clave asignada puede canjearse");
+            throw new ReglaDominioException(
+                    "Solo una clave asignada puede canjearse"
+            );
         }
+
         this.estado = EstadoClaveDigital.CANJEADA;
     }
 
     /** regla 3 no hay reembolso de claves canjeadas ni fuera del plazo */
     public void reembolsar(Instant ahora, Duration plazo) {
+
         if (estado == EstadoClaveDigital.CANJEADA) {
-            throw new ReglaDominioException("No se reembolsan claves ya canjeadas.");
+            throw new ReglaDominioException(
+                    "No se reembolsan claves ya canjeadas."
+            );
         }
+
         if (estado != EstadoClaveDigital.ASIGNADA) {
-            throw new ReglaDominioException("Solo una clave asignada puede reembolsarse.");
+            throw new ReglaDominioException(
+                    "Solo una clave asignada puede reembolsarse."
+            );
         }
+
+        if (ahora == null || plazo == null) {
+            throw new ReglaDominioException(
+                    "La fecha y el plazo de reembolso son obligatorios."
+            );
+        }
+
         if (ahora.isAfter(fechaAsignacion.plus(plazo))) {
-            throw new ReglaDominioException("El plazo de reembolso ya venció.");
+            throw new ReglaDominioException(
+                    "El plazo de reembolso ya venció."
+            );
         }
+
         this.estado = EstadoClaveDigital.REEMBOLSADA;
     }
 
-    public UUID getId() { return id; }
-    public String getCodigo() { return codigo; }
-    public LicenciaDigital getLicencia() { return licencia; }
-    public EstadoClaveDigital getEstado() { return estado; }
-    public UUID getCompradorId() { return compradorId; }
-    public Instant getFechaAsignacion() { return fechaAsignacion; }
+    public UUID getId() {
+        return id;
+    }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public LicenciaDigital getLicencia() {
+        return licencia;
+    }
+
+    public EstadoClaveDigital getEstado() {
+        return estado;
+    }
+
+    public UUID getCompradorId() {
+        return compradorId;
+    }
+
+    public Instant getFechaAsignacion() {
+        return fechaAsignacion;
+    }
 
     @Override
     public boolean equals(Object o) {
+
         if (this == o) return true;
+
         if (!(o instanceof ClaveDigital other)) return false;
+
         return id.equals(other.id);
     }
 

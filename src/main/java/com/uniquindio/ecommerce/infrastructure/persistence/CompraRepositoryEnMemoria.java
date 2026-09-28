@@ -4,6 +4,7 @@ import com.uniquindio.ecommerce.domain.entity.Compra;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -18,13 +19,21 @@ public class CompraRepositoryEnMemoria implements CompraRepository {
 
     @Override
     public boolean existeCompraActiva(String compradorId, String modeloId) {
-
-        return compras.values().stream()
+        return compras.values()
+                .stream()
                 .anyMatch(compra ->
                         compra.getCompradorId().equals(compradorId)
                                 && compra.getModeloId().equals(modeloId)
                                 && !compra.getEstado().esFinal()
                 );
+    }
+
+    @Override
+    public List<Compra> obtenerPorCompradorId(String compradorId) {
+        return compras.values()
+                .stream()
+                .filter(compra -> compra.getCompradorId().equals(compradorId))
+                .toList();
     }
 
     @Override

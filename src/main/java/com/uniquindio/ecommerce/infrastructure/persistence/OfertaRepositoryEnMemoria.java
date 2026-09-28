@@ -2,8 +2,10 @@ package com.uniquindio.ecommerce.infrastructure.persistence;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
+import com.uniquindio.ecommerce.domain.valueobject.EstadoOferta;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,5 +22,13 @@ public class OfertaRepositoryEnMemoria implements OfertaRepository {
     @Override
     public void guardar(Oferta oferta) {
         ofertas.put(oferta.getId(), oferta);
+    }
+
+    @Override
+    public List<Oferta> obtenerPublicadas() {
+        return ofertas.values()
+                .stream()
+                .filter(oferta -> oferta.getEstado() == EstadoOferta.PUBLICADA)
+                .toList();
     }
 }

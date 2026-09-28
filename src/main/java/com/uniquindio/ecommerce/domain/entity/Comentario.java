@@ -6,19 +6,29 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-
+/**
+ * Entidad Comentario.
+ *
+ * Reglas de negocio:
+ * Regla 4: Un comprador no puede calificar un producto sin haberlo comprado.
+ *
+ * Otras validaciones propias de la entidad:
+ * - Todo comentario debe estar asociado a una compra.
+ * - El comentario debe tener contenido.
+ * - La calificación debe estar entre 1 y 5.
+ * - Todo comentario debe registrar su fecha de creación.
+ */
 public class Comentario {
 
     private final UUID id;
-    private final UUID compraId;
+    private final String compraId;
     private final String contenido;
     private final int calificacion;
     private final LocalDateTime fechaCreacion;
 
-
     private Comentario(
             UUID id,
-            UUID compraId,
+            String compraId,
             String contenido,
             int calificacion
     ) {
@@ -29,49 +39,31 @@ public class Comentario {
         this.fechaCreacion = LocalDateTime.now();
     }
 
-    /**
-     * Crea un comentario.
-     *
-     * Regla 1:
-     * Todo comentario debe estar asociado a una compra.
-     *
-     * Regla 2:
-     * El comentario debe tener contenido.
-     *
-     * Regla 3:
-     * La calificación debe estar entre 1 y 5.
-     */
     public static Comentario crear(
             UUID id,
-            UUID compraId,
+            String compraId,
             String contenido,
             int calificacion
     ) {
 
-        // Regla 1:
-        // No se puede crear un comentario sin una compra asociada.
         if (id == null) {
             throw new ReglaDominioException(
                     "El comentario debe tener un identificador"
             );
         }
 
-        if (compraId == null) {
+        if (compraId == null || compraId.isBlank()) {
             throw new ReglaDominioException(
                     "El comentario debe estar asociado a una compra"
             );
         }
 
-        // Regla 2:
-        // El comentario debe contener texto.
         if (contenido == null || contenido.isBlank()) {
             throw new ReglaDominioException(
                     "El comentario debe tener contenido"
             );
         }
 
-        // Regla 3:
-        // La calificación permitida está entre 1 y 5.
         if (calificacion < 1 || calificacion > 5) {
             throw new ReglaDominioException(
                     "La calificación debe estar entre 1 y 5"
@@ -86,13 +78,11 @@ public class Comentario {
         );
     }
 
-    // CONSULTAS
-
     public UUID getId() {
         return id;
     }
 
-    public UUID getCompraId() {
+    public String getCompraId() {
         return compraId;
     }
 
@@ -104,21 +94,10 @@ public class Comentario {
         return calificacion;
     }
 
-    /**
-     * Regla 4:
-     * La fecha de creación queda registrada al crear
-     * el comentario y no puede modificarse.
-     */
     public LocalDateTime getFechaCreacion() {
         return fechaCreacion;
     }
 
-    // IDENTIDAD DE LA ENTIDAD
-
-    /**
-     * Dos comentarios representan la misma entidad
-     * cuando tienen el mismo identificador.
-     */
     @Override
     public boolean equals(Object o) {
 
@@ -133,10 +112,6 @@ public class Comentario {
         return id.equals(otro.id);
     }
 
-    /**
-     * El hash se construye únicamente utilizando
-     * el identificador de la entidad.
-     */
     @Override
     public int hashCode() {
         return Objects.hash(id);

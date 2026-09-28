@@ -18,8 +18,8 @@ class OfertaTest {
     void dosOfertasConElMismoIdSonLaMismaAunqueTenganDatosDistintos() {
         // Arrange
         UUID mismoId = UUID.randomUUID();
-        Oferta oferta1 = new Oferta(mismoId, UUID.randomUUID(), "Juego A", new Precio(new BigDecimal("10")), 5);
-        Oferta oferta2 = new Oferta(mismoId, UUID.randomUUID(), "Juego B", new Precio(new BigDecimal("99")), 1);
+        Oferta oferta1 = Oferta.crear(mismoId, UUID.randomUUID(), "Juego A", new Precio(new BigDecimal("10")), 5);
+        Oferta oferta2 = Oferta.crear(mismoId, UUID.randomUUID(), "Juego B", new Precio(new BigDecimal("99")), 1);
 
         // Act & Assert
         assertEquals(oferta1, oferta2);
@@ -28,7 +28,7 @@ class OfertaTest {
     @Test
     void noDebePermitirDescontarMasStockDelDisponible() {
         // Arrange
-        Oferta oferta = new Oferta(UUID.randomUUID(), UUID.randomUUID(), "Juego A", new Precio(new BigDecimal("10")), 2);
+        Oferta oferta = Oferta.crear(UUID.randomUUID(), UUID.randomUUID(), "Juego A", new Precio(new BigDecimal("10")), 2);
 
         // Act & Assert
         assertThrows(ReglaDominioException.class, () -> oferta.descontarStock(5));
@@ -38,7 +38,7 @@ class OfertaTest {
     @Test
     void noDebePublicarSinPlataformaYElEstadoNoDebeCambiar() {
         // Arrange
-        Oferta oferta = new Oferta(UUID.randomUUID(), UUID.randomUUID(), "Juego A", new Precio(new BigDecimal("10")), 5);
+        Oferta oferta = Oferta.crear(UUID.randomUUID(), UUID.randomUUID(), "Juego A", new Precio(new BigDecimal("10")), 5);
 
         // Act & Assert
         assertThrows(ReglaDominioException.class, oferta::publicar);

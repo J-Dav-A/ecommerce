@@ -24,7 +24,7 @@ public class PublicarProductoUseCase {
             Plataforma plataforma
     ) {
 
-        Oferta oferta = new Oferta(
+        Oferta oferta = Oferta.crear(
                 id,
                 vendedorId,
                 titulo,

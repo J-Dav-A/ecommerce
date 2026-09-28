@@ -18,13 +18,38 @@ public class Oferta {
     private int stock;
     private EstadoOferta estado;
 
-    public Oferta(UUID id, UUID vendedorId, String titulo, Precio precio, int stock) {
+    private Oferta(UUID id, UUID vendedorId, String titulo, Precio precio, int stock) {
         this.id = id;
         this.vendedorId = vendedorId;
         this.titulo = titulo;
         this.precio = precio;
         this.stock = stock;
         this.estado = EstadoOferta.BORRADOR;
+    }
+
+    public static Oferta crear(UUID id, UUID vendedorId, String titulo, Precio precio, int stock) {
+
+        if (id == null) {
+            throw new ReglaDominioException("La oferta debe tener un identificador");
+        }
+
+        if (vendedorId == null) {
+            throw new ReglaDominioException("La oferta debe tener un vendedor");
+        }
+
+        if (titulo == null || titulo.isBlank()) {
+            throw new ReglaDominioException("La oferta debe tener un título");
+        }
+
+        if (precio == null) {
+            throw new ReglaDominioException("La oferta debe tener un precio");
+        }
+
+        if (stock < 0) {
+            throw new ReglaDominioException("El stock no puede ser negativo");
+        }
+
+        return new Oferta(id, vendedorId, titulo, precio, stock);
     }
 
     public void definirPlataforma(Plataforma plataforma) {
@@ -44,6 +69,12 @@ public class Oferta {
         if (plataforma == null) {
             throw new ReglaDominioException("No se puede publicar la oferta sin una plataforma definida");
         }
+        if (precio == null) {
+            throw new ReglaDominioException("No se puede publicar la oferta sin un precio definido");
+        }
+        if (stock <= 0) {
+            throw new ReglaDominioException("No se puede publicar una oferta sin stock disponible");
+        }
         if (estado == EstadoOferta.ELIMINADA) {
             throw new ReglaDominioException("No se puede publicar una oferta eliminada");
         }
@@ -60,8 +91,8 @@ public class Oferta {
     /** regla 6 el stock nunca puede ser negativo */
 
     public void descontarStock(int cantidad) {
-        if (cantidad < 0) {
-            throw new ReglaDominioException("La cantidad a descontar no puede ser negativa");
+        if (cantidad <= 0) {
+            throw new ReglaDominioException("La cantidad a descontar debe ser mayor que cero");
         }
         if (cantidad > stock) {
             throw new ReglaDominioException("No se puede descontar más stock del disponible");
@@ -78,19 +109,33 @@ public class Oferta {
         this.estado = EstadoOferta.ELIMINADA;
     }
 
-    public UUID getId() {return id;}
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getVendedorId() {return vendedorId;}
+    public UUID getVendedorId() {
+        return vendedorId;
+    }
 
-    public String getTitulo() {return titulo;}
+    public String getTitulo() {
+        return titulo;
+    }
 
-    public Plataforma getPlataforma() {return plataforma;}
+    public Plataforma getPlataforma() {
+        return plataforma;
+    }
 
-    public Precio getPrecio() {return precio;}
+    public Precio getPrecio() {
+        return precio;
+    }
 
-    public int getStock() {return stock;}
+    public int getStock() {
+        return stock;
+    }
 
-    public EstadoOferta getEstado() {return estado;}
+    public EstadoOferta getEstado() {
+        return estado;
+    }
 
     @Override
     public boolean equals(Object o) {

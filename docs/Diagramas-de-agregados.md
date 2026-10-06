@@ -27,3 +27,17 @@ Invariantes:
 3. Una Clave canjeada nunca puede pasar a reembolsada.
 4. El reembolso siempre exige que la clave no esté canjeada y que se pida dentro del plazo.
 5. El código de la Clave siempre debe ser no nulo y único.
+
+## Agregado 3: Compra
+
+Raíz: Compra
+Dentro del límite: EstadoCompra, Precio (congelado)
+Fuera del límite (por id): Oferta, Comprador
+
+Invariantes:
+1. Toda Compra nace siempre en estado PENDIENTE.
+2. Una Compra nunca puede crearse sin una Oferta y un Comprador asociados.
+3. El precio de una Compra siempre queda congelado al momento de crearse, y nunca cambia aunque el precio de la Oferta cambie después.
+4. Una Compra solo puede avanzar de estado siguiendo su ciclo de vida: PENDIENTE -> COMPLETADA -> REEMBOLSADA.
+5. Una Compra en estado REEMBOLSADA nunca puede volver a modificarse.
+6. Solo una Compra COMPLETADA puede pasar a REEMBOLSADA, y siempre exige un motivo.

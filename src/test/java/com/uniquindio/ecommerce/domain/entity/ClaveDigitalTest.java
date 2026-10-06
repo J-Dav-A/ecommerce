@@ -19,8 +19,9 @@ class ClaveDigitalTest {
     void dosClavesConElMismoIdSonLaMismaAunqueTenganDatosDistintos() {
         // Arrange
         UUID mismoId = UUID.randomUUID();
-        ClaveDigital clave1 = ClaveDigital.crear(mismoId, "AAAA-1111", new LicenciaDigital(1, false));
-        ClaveDigital clave2 = ClaveDigital.crear(mismoId, "BBBB-2222", new LicenciaDigital(3, true));
+        UUID ofertaId = UUID.randomUUID();
+        ClaveDigital clave1 = ClaveDigital.crear(mismoId, ofertaId, "AAAA-1111", new LicenciaDigital(1, false));
+        ClaveDigital clave2 = ClaveDigital.crear(mismoId, ofertaId, "BBBB-2222", new LicenciaDigital(3, true));
 
         // Act & Assert
         assertEquals(clave1, clave2);
@@ -29,8 +30,7 @@ class ClaveDigitalTest {
     @Test
     void noDebePermitirAsignarUnaClaveQueYaFueAsignada() {
         // Arrange
-        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), "CCCC-3333", new LicenciaDigital(1, false));
-        clave.asignar(UUID.randomUUID(), Instant.now());
+        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), UUID.randomUUID(), "CCCC-3333", new LicenciaDigital(1, false));        clave.asignar(UUID.randomUUID(), Instant.now());
 
         // Act & Assert
         assertThrows(ReglaDominioException.class,
@@ -41,8 +41,7 @@ class ClaveDigitalTest {
     @Test
     void noDebeReembolsarUnaClaveCanjeadaYElEstadoNoDebeCambiar() {
         // Arrange
-        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), "DDDD-4444", new LicenciaDigital(1, false));
-        clave.asignar(UUID.randomUUID(), Instant.now());
+        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), UUID.randomUUID(), "DDDD-4444", new LicenciaDigital(1, false));        clave.asignar(UUID.randomUUID(), Instant.now());
         clave.canjear();
 
         // Act & Assert

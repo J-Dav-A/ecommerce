@@ -10,7 +10,7 @@ import com.uniquindio.ecommerce.domain.valueobject.Precio;
 public class Compra {
 
     private final String id;
-    private final String modeloId;
+    private final String ofertaId;
     private final String compradorId;
     private final Precio precioCongelado;
     private final LocalDateTime fechaCompra;
@@ -28,12 +28,12 @@ public class Compra {
      */
     private Compra(
             String id,
-            String modeloId,
+            String ofertaId,
             String compradorId,
             Precio precioCongelado) {
 
         this.id = id;
-        this.modeloId = modeloId;
+        this.ofertaId = ofertaId;
         this.compradorId = compradorId;
         this.precioCongelado = precioCongelado;
         this.fechaCompra = LocalDateTime.now();
@@ -54,13 +54,13 @@ public class Compra {
      */
     public static Compra realizar(
             String id,
-            String modeloId,
+            String ofertaId,
             String compradorId,
-            Precio precioActualDelModelo) {
+            Precio precioActualDeLaOferta) {
 
         // Regla 1:
         // No se puede crear una compra sin modelo o comprador.
-        if (modeloId == null || compradorId == null) {
+        if (ofertaId == null || compradorId == null) {
             throw new ReglaDominioException(
                     "La compra debe indicar modelo y comprador"
             );
@@ -68,7 +68,7 @@ public class Compra {
 
         // Regla 2:
         // No se puede crear una compra sin un precio válido.
-        if (precioActualDelModelo == null) {
+        if (precioActualDeLaOferta == null) {
             throw new ReglaDominioException(
                     "La compra debe tener un precio válido"
             );
@@ -79,9 +79,9 @@ public class Compra {
         // el valor de esta compra.
         return new Compra(
                 id,
-                modeloId,
+                ofertaId,
                 compradorId,
-                precioActualDelModelo
+                precioActualDeLaOferta
         );
     }
 
@@ -224,10 +224,10 @@ public class Compra {
     }
 
     /**
-     * Obtiene el identificador del modelo comprado.
+     * Obtiene el identificador de la oferta comprada.
      */
-    public String getModeloId() {
-        return modeloId;
+    public String getOfertaId() {
+        return ofertaId;
     }
 
     /**

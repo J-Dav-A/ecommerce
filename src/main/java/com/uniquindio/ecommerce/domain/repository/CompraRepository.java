@@ -8,7 +8,7 @@ public interface CompraRepository {
 
     Optional<Compra> obtenerPorId(String id);
 
-    boolean existeCompraActiva(String compradorId, String modeloId);
+    boolean existeCompraActiva(String compradorId, String ofertaId);
 
     List<Compra> obtenerPorCompradorId(String compradorId);
 

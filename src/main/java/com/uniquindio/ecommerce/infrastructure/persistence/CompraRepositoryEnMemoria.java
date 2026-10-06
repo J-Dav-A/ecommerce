@@ -18,12 +18,12 @@ public class CompraRepositoryEnMemoria implements CompraRepository {
     }
 
     @Override
-    public boolean existeCompraActiva(String compradorId, String modeloId) {
+    public boolean existeCompraActiva(String compradorId, String ofertaId) {
         return compras.values()
                 .stream()
                 .anyMatch(compra ->
                         compra.getCompradorId().equals(compradorId)
-                                && compra.getModeloId().equals(modeloId)
+                                && compra.getofertaId().equals(ofertaId)
                                 && !compra.getEstado().esFinal()
                 );
     }

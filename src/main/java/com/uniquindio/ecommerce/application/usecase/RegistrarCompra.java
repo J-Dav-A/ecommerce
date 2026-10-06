@@ -1,31 +1,37 @@
 package com.uniquindio.ecommerce.application.usecase;
 
+import com.uniquindio.ecommerce.domain.entity.ClaveDigital;
 import com.uniquindio.ecommerce.domain.entity.Compra;
 import com.uniquindio.ecommerce.domain.entity.Oferta;
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
+import com.uniquindio.ecommerce.domain.repository.ClaveDigitalRepository;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoOferta;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
  * Caso de uso: RegistrarCompra.
  *
  * Permite a un comprador adquirir una Oferta publicada
- * dentro del marketplace.
+ * dentro del marketplace, asignandole una ClaveDigital disponible.
  */
 public class RegistrarCompra {
 
     private final OfertaRepository ofertaRepository;
     private final CompraRepository compraRepository;
+    private final ClaveDigitalRepository claveDigitalRepository;
 
     public RegistrarCompra(
             OfertaRepository ofertaRepository,
-            CompraRepository compraRepository
+            CompraRepository compraRepository,
+            ClaveDigitalRepository claveDigitalRepository
     ) {
         this.ofertaRepository = ofertaRepository;
         this.compraRepository = compraRepository;
+        this.claveDigitalRepository = claveDigitalRepository;
     }
 
     /**
@@ -89,6 +95,17 @@ public class RegistrarCompra {
         }
 
         /*
+         * Debe existir al menos una clave digital disponible
+         * asociada a esta oferta antes de poder completar la compra.
+         */
+        ClaveDigital clave = claveDigitalRepository.obtenerDisponiblePorOferta(ofertaId)
+                .orElseThrow(() ->
+                        new ReglaDominioException(
+                                "No hay claves digitales disponibles para esta oferta"
+                        )
+                );
+
+        /*
          * La compra conserva el precio de la oferta
          * en el momento en que se realiza.
          */
@@ -105,9 +122,13 @@ public class RegistrarCompra {
         // Se descuenta una unidad del stock de la oferta.
         oferta.descontarStock(1);
 
+        // Se asigna la clave digital al comprador.
+        clave.asignar(compradorId, Instant.now());
+
         // Se persisten los cambios.
         compraRepository.guardar(compra);
         ofertaRepository.guardar(oferta);
+        claveDigitalRepository.guardar(clave);
 
         return compra;
     }

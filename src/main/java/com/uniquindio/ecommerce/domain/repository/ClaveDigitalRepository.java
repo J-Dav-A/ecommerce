@@ -13,5 +13,7 @@ public interface ClaveDigitalRepository {
 
     Optional<ClaveDigital> obtenerPorId(UUID id);
 
+    Optional<ClaveDigital> obtenerDisponiblePorOferta(UUID ofertaId);
+
     void guardar(ClaveDigital clave);
 }

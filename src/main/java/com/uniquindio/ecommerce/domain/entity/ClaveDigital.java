@@ -12,23 +12,29 @@ import java.util.UUID;
 public class ClaveDigital {
 
     private final UUID id;
+    private final UUID ofertaId;
     private final String codigo;
     private final LicenciaDigital licencia;
     private EstadoClaveDigital estado;
     private UUID compradorId;
     private Instant fechaAsignacion;
 
-    private ClaveDigital(UUID id, String codigo, LicenciaDigital licencia) {
+    private ClaveDigital(UUID id, UUID ofertaId, String codigo, LicenciaDigital licencia) {
         this.id = id;
+        this.ofertaId = ofertaId;
         this.codigo = codigo;
         this.licencia = licencia;
         this.estado = EstadoClaveDigital.DISPONIBLE;
     }
 
-    public static ClaveDigital crear(UUID id, String codigo, LicenciaDigital licencia) {
+    public static ClaveDigital crear(UUID id,UUID ofertaId, String codigo, LicenciaDigital licencia) {
 
         if (id == null) {
             throw new ReglaDominioException("La clave digital requiere un identificador.");
+        }
+
+        if (ofertaId == null) {
+            throw new ReglaDominioException("La clave digital debe estar asociada a una oferta.");
         }
 
         if (codigo == null || codigo.isBlank()) {
@@ -39,7 +45,7 @@ public class ClaveDigital {
             throw new ReglaDominioException("La clave debe tener una licencia.");
         }
 
-        return new ClaveDigital(id, codigo, licencia);
+        return new ClaveDigital(id, ofertaId, codigo, licencia);
     }
 
     /** regla 2 solo una clave DISPONIBLE puede asignarse y una sola vez */
@@ -107,6 +113,10 @@ public class ClaveDigital {
 
     public UUID getId() {
         return id;
+    }
+
+    public UUID getOfertaId() {
+        return ofertaId;
     }
 
     public String getCodigo() {

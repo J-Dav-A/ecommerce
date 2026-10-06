@@ -64,7 +64,7 @@ public class RegistrarCompra {
             );
         }
 
-        String modeloId = oferta.getId().toString();
+        String ofertaIdString = oferta.getId().toString();
         String compradorIdString = compradorId.toString();
 
         /*
@@ -74,7 +74,7 @@ public class RegistrarCompra {
          */
         if (compraRepository.existeCompraActiva(
                 compradorIdString,
-                modeloId
+                ofertaIdString
         )) {
             throw new ReglaDominioException(
                     "El comprador ya tiene una compra activa de esta oferta"
@@ -94,7 +94,7 @@ public class RegistrarCompra {
          */
         Compra compra = Compra.realizar(
                 UUID.randomUUID().toString(),
-                modeloId,
+                ofertaIdString,
                 compradorIdString,
                 oferta.getPrecio()
         );

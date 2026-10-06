@@ -224,9 +224,9 @@ public class Compra {
     }
 
     /**
-     * Obtiene el identificador del modelo comprado.
+     * Obtiene el identificador de la oferta comprada.
      */
-    public String getofertaId() {
+    public String getOfertaId() {
         return ofertaId;
     }
 

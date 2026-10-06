@@ -23,7 +23,7 @@ public class CompraRepositoryEnMemoria implements CompraRepository {
                 .stream()
                 .anyMatch(compra ->
                         compra.getCompradorId().equals(compradorId)
-                                && compra.getofertaId().equals(ofertaId)
+                                && compra.getOfertaId().equals(ofertaId)
                                 && !compra.getEstado().esFinal()
                 );
     }

@@ -3,27 +3,22 @@ package com.uniquindio.ecommerce.infrastructure.persistence;
 import com.uniquindio.ecommerce.domain.entity.Usuario;
 import com.uniquindio.ecommerce.domain.repository.UsuarioRepository;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UsuarioRepositoryEnMemoria implements UsuarioRepository {
 
-    private final Map<UUID, Usuario> usuarios = new HashMap<>();
+    private final Map<String, Usuario> usuarios = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<Usuario> obtenerPorId(UUID id) {
+    public Optional<Usuario> obtenerPorId(String id) {
         return Optional.ofNullable(usuarios.get(id));
     }
 
     @Override
     public boolean existePorEmail(String email) {
-        return usuarios.values()
-                .stream()
-                .anyMatch(usuario ->
-                        usuario.getEmail().equalsIgnoreCase(email)
-                );
+        return usuarios.values().stream()
+                .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));
     }
 
     @Override

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/compras")
@@ -30,7 +29,6 @@ public class CompraController {
     @PostMapping
     public ResponseEntity<CompraDetalleResponse> crear(@Valid @RequestBody RegistrarCompraRequest request) {
         Compra compra = registrarCompraUseCase.ejecutar(
-                UUID.randomUUID().toString(),
                 request.ofertaId(),
                 request.compradorId()
         );

@@ -12,8 +12,7 @@ public class CompraMapper {
                 compra.getId(),
                 compra.getOfertaId(),
                 compra.getCompradorId(),
-                compra.getPrecioCongelado().valor(),
-                compra.getPrecioCongelado().moneda(),
+                compra.getPrecioCongelado().valor().doubleValue(),
                 compra.getEstado().toString(),
                 compra.getFechaCompra()
         );

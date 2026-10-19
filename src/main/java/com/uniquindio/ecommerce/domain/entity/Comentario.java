@@ -1,114 +1,42 @@
 package com.uniquindio.ecommerce.domain.entity;
 
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
-
-import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
-/**
- * Entidad Comentario.
- *
- * Reglas de negocio:
- * Regla 4: Un comprador no puede calificar un producto sin haberlo comprado.
- *
- * Otras validaciones propias de la entidad:
- * - Todo comentario debe estar asociado a una compra.
- * - El comentario debe tener contenido.
- * - La calificación debe estar entre 1 y 5.
- * - Todo comentario debe registrar su fecha de creación.
- */
 public class Comentario {
 
-    private final UUID id;
-    private final String compraId;
-    private final String contenido;
-    private final int calificacion;
-    private final LocalDateTime fechaCreacion;
+    private final String id;
+    private final String compradorId;
+    private final String ofertaId;
+    private final String texto;
 
-    private Comentario(
-            UUID id,
-            String compraId,
-            String contenido,
-            int calificacion
-    ) {
+    private Comentario(String id, String compradorId, String ofertaId, String texto) {
         this.id = id;
-        this.compraId = compraId;
-        this.contenido = contenido;
-        this.calificacion = calificacion;
-        this.fechaCreacion = LocalDateTime.now();
+        this.compradorId = compradorId;
+        this.ofertaId = ofertaId;
+        this.texto = texto;
     }
 
-    public static Comentario crear(
-            UUID id,
-            String compraId,
-            String contenido,
-            int calificacion
-    ) {
-
-        if (id == null) {
-            throw new ReglaDominioException(
-                    "El comentario debe tener un identificador"
-            );
+    public static Comentario crear(String id, String compradorId, String ofertaId, String texto) {
+        if (texto == null || texto.isBlank()) {
+            throw new ReglaDominioException("El comentario no puede estar vacío");
         }
-
-        if (compraId == null || compraId.isBlank()) {
-            throw new ReglaDominioException(
-                    "El comentario debe estar asociado a una compra"
-            );
-        }
-
-        if (contenido == null || contenido.isBlank()) {
-            throw new ReglaDominioException(
-                    "El comentario debe tener contenido"
-            );
-        }
-
-        if (calificacion < 1 || calificacion > 5) {
-            throw new ReglaDominioException(
-                    "La calificación debe estar entre 1 y 5"
-            );
-        }
-
-        return new Comentario(
-                id,
-                compraId,
-                contenido,
-                calificacion
-        );
+        return new Comentario(id, compradorId, ofertaId, texto);
     }
 
-    public UUID getId() {
-        return id;
+    public static Comentario reconstruir(String id, String compradorId, String ofertaId, String texto) {
+        return new Comentario(id, compradorId, ofertaId, texto);
     }
 
-    public String getCompraId() {
-        return compraId;
-    }
-
-    public String getContenido() {
-        return contenido;
-    }
-
-    public int getCalificacion() {
-        return calificacion;
-    }
-
-    public LocalDateTime getFechaCreacion() {
-        return fechaCreacion;
-    }
+    public String getId() { return id; }
+    public String getCompradorId() { return compradorId; }
+    public String getOfertaId() { return ofertaId; }
+    public String getTexto() { return texto; }
 
     @Override
     public boolean equals(Object o) {
-
-        if (this == o) {
-            return true;
-        }
-
-        if (!(o instanceof Comentario otro)) {
-            return false;
-        }
-
+        if (this == o) return true;
+        if (!(o instanceof Comentario otro)) return false;
         return id.equals(otro.id);
     }
 

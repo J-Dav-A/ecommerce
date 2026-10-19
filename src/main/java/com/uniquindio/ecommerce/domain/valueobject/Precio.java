@@ -1,17 +1,15 @@
 package com.uniquindio.ecommerce.domain.valueobject;
 
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
-
 import java.math.BigDecimal;
 
-public record Precio(BigDecimal valor) {
-
+public record Precio(BigDecimal valor, String moneda) {
     public Precio {
-        if (valor == null) {
-            throw new ReglaDominioException("El valor del precio no puede ser nulo");
+        if (valor == null || valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ReglaDominioException("El precio debe ser mayor a cero");
         }
-        if (valor.signum() <= 0) {
-            throw new ReglaDominioException("El valor del precio debe ser mayor que cero");
+        if (moneda == null || moneda.isBlank()) {
+            throw new ReglaDominioException("La moneda es obligatoria");
         }
     }
 }

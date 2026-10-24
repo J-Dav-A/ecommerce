@@ -31,16 +31,16 @@ class RegistrarCompraTest {
         CompraRepository compraRepository = new CompraRepositoryEnMemoria();
         ClaveDigitalRepository claveDigitalRepository = new ClaveDigitalRepositoryEnMemoria();
 
-        UUID vendedorId = UUID.randomUUID();
-        UUID compradorId = UUID.randomUUID();
+        String vendedorId = UUID.randomUUID().toString();
+        String compradorId = UUID.randomUUID().toString();
 
-        Oferta oferta = Oferta.crear(UUID.randomUUID(), vendedorId, "Juego de prueba",
-                new Precio(new BigDecimal("59.99")), 5);
+        Oferta oferta = Oferta.crear(UUID.randomUUID().toString(), vendedorId, "Juego de prueba",
+                new Precio(new BigDecimal("59.99"), "COP"), 5);
         oferta.definirPlataforma(Plataforma.PC);
         oferta.publicar();
         ofertaRepository.guardar(oferta);
 
-        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), oferta.getId(),
+        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID().toString(), oferta.getId(),
                 "XXXX-YYYY", new LicenciaDigital(1, false));
         claveDigitalRepository.guardar(clave);
 
@@ -63,11 +63,11 @@ class RegistrarCompraTest {
         CompraRepository compraRepository = new CompraRepositoryEnMemoria();
         ClaveDigitalRepository claveDigitalRepository = new ClaveDigitalRepositoryEnMemoria();
 
-        UUID vendedorId = UUID.randomUUID();
-        UUID compradorId = UUID.randomUUID();
+        String vendedorId = UUID.randomUUID().toString();
+        String compradorId = UUID.randomUUID().toString();
 
-        Oferta oferta = Oferta.crear(UUID.randomUUID(), vendedorId, "Juego sin claves",
-                new Precio(new BigDecimal("39.99")), 5);
+        Oferta oferta = Oferta.crear(UUID.randomUUID().toString(), vendedorId, "Juego sin claves",
+                new Precio(new BigDecimal("39.99"), "COP"), 5);
         oferta.definirPlataforma(Plataforma.PC);
         oferta.publicar();
         ofertaRepository.guardar(oferta);

@@ -49,6 +49,11 @@ public class ClaveDigital {
         this.estado = EstadoClaveDigital.ASIGNADA;
     }
 
+    public void canjear() {
+        if (estado != EstadoClaveDigital.ASIGNADA) throw new ReglaDominioException("Solo una clave asignada puede canjearse");
+        this.estado = EstadoClaveDigital.CANJEADA;
+    }
+
     public void reembolsar(Instant ahora, Duration plazo) {
         if (estado == EstadoClaveDigital.CANJEADA) throw new ReglaDominioException("No se reembolsan claves ya canjeadas");
         if (estado != EstadoClaveDigital.ASIGNADA) throw new ReglaDominioException("Solo se reembolsan claves asignadas");

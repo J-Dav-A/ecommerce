@@ -3,6 +3,7 @@ package com.uniquindio.ecommerce.application.usecase;
 import com.uniquindio.ecommerce.domain.entity.ClaveDigital;
 import com.uniquindio.ecommerce.domain.entity.Compra;
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
 import com.uniquindio.ecommerce.domain.repository.ClaveDigitalRepository;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
@@ -23,11 +24,10 @@ public class RegistrarCompra {
 
     @Transactional
     public Compra ejecutar(String ofertaId, String compradorId) {
-        Oferta oferta = ofertaRepository.obtenerPorId(ofertaId).orElseThrow();
-        ClaveDigital clave = claveDigitalRepository.obtenerDisponiblePorOferta(ofertaId).orElseThrow();
+        Oferta oferta = ofertaRepository.obtenerPorId(ofertaId).orElseThrow(() -> new ReglaDominioException("La oferta no existe"));
+        ClaveDigital clave = claveDigitalRepository.obtenerDisponiblePorOferta(ofertaId).orElseThrow(() -> new ReglaDominioException("No hay claves digitales disponibles para esta oferta"));
 
         Compra compra = Compra.realizar(UUID.randomUUID().toString(), ofertaId, compradorId, oferta.getPrecio());
-        compra.confirmar();
         oferta.descontarStock(1);
         clave.asignar(compradorId, Instant.now());
 

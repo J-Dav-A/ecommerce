@@ -18,9 +18,9 @@ class CompraTest {
         // Arrange
         String mismoId = UUID.randomUUID().toString();
         Compra compra1 = Compra.realizar(mismoId, "oferta-1", "comprador-1",
-                new Precio(new BigDecimal("10")));
+                new Precio(new BigDecimal("10"), "COP"));
         Compra compra2 = Compra.realizar(mismoId, "oferta-2", "comprador-2",
-                new Precio(new BigDecimal("99")));
+                new Precio(new BigDecimal("99"), "COP"));
 
         // Act & Assert
         assertEquals(compra1, compra2);
@@ -30,7 +30,7 @@ class CompraTest {
     void noDebeReembolsarUnaCompraPendienteYElEstadoNoDebeCambiar() {
         // Arrange
         Compra compra = Compra.realizar(UUID.randomUUID().toString(), "oferta-1",
-                "comprador-1", new Precio(new BigDecimal("50")));
+                "comprador-1", new Precio(new BigDecimal("50"), "COP"));
 
         // Act & Assert
         assertThrows(ReglaDominioException.class,

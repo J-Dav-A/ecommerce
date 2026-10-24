@@ -13,8 +13,8 @@ class PrecioTest {
     @Test
     void dosPreciosConElMismoValorDebenSerIguales() {
         // Arrange
-        Precio p1 = new Precio(new BigDecimal("59.99"));
-        Precio p2 = new Precio(new BigDecimal("59.99"));
+        Precio p1 = new Precio(new BigDecimal("59.99"), "COP");
+        Precio p2 = new Precio(new BigDecimal("59.99"), "COP");
 
         // Act & Assert
         assertEquals(p1, p2);
@@ -26,6 +26,6 @@ class PrecioTest {
         BigDecimal valorInvalido = BigDecimal.ZERO;
 
         // Act & Assert
-        assertThrows(ReglaDominioException.class, () -> new Precio(valorInvalido));
+        assertThrows(ReglaDominioException.class, () -> new Precio(valorInvalido, "COP"));
     }
 }

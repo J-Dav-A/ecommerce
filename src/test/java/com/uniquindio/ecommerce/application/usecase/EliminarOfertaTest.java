@@ -19,8 +19,8 @@ class EliminarOfertaTest {
         // Arrange
         OfertaRepository ofertaRepository = new OfertaRepositoryEnMemoria();
 
-        Oferta oferta = Oferta.crear(UUID.randomUUID(), UUID.randomUUID(), "Juego a eliminar",
-                new Precio(new BigDecimal("19.99")), 3);
+        Oferta oferta = Oferta.crear(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "Juego a eliminar",
+                new Precio(new BigDecimal("19.99"), "COP"), 3);
         ofertaRepository.guardar(oferta);
 
         EliminarOferta eliminarOferta = new EliminarOferta(ofertaRepository);

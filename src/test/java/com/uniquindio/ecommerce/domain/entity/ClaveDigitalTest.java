@@ -1,6 +1,5 @@
 package com.uniquindio.ecommerce.domain.entity;
 
-import com.uniquindio.ecommerce.domain.entity.ClaveDigital;
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoClaveDigital;
 import com.uniquindio.ecommerce.domain.valueobject.LicenciaDigital;
@@ -18,8 +17,8 @@ class ClaveDigitalTest {
     @Test
     void dosClavesConElMismoIdSonLaMismaAunqueTenganDatosDistintos() {
         // Arrange
-        UUID mismoId = UUID.randomUUID();
-        UUID ofertaId = UUID.randomUUID();
+        String mismoId = UUID.randomUUID().toString();
+        String ofertaId = UUID.randomUUID().toString();
         ClaveDigital clave1 = ClaveDigital.crear(mismoId, ofertaId, "AAAA-1111", new LicenciaDigital(1, false));
         ClaveDigital clave2 = ClaveDigital.crear(mismoId, ofertaId, "BBBB-2222", new LicenciaDigital(3, true));
 
@@ -30,18 +29,20 @@ class ClaveDigitalTest {
     @Test
     void noDebePermitirAsignarUnaClaveQueYaFueAsignada() {
         // Arrange
-        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), UUID.randomUUID(), "CCCC-3333", new LicenciaDigital(1, false));        clave.asignar(UUID.randomUUID(), Instant.now());
+        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "CCCC-3333", new LicenciaDigital(1, false));
+        clave.asignar(UUID.randomUUID().toString(), Instant.now());
 
         // Act & Assert
         assertThrows(ReglaDominioException.class,
-                () -> clave.asignar(UUID.randomUUID(), Instant.now()));
+                () -> clave.asignar(UUID.randomUUID().toString(), Instant.now()));
     }
 
     //Prueba de invariante del agregado ClaveDigital
     @Test
     void noDebeReembolsarUnaClaveCanjeadaYElEstadoNoDebeCambiar() {
         // Arrange
-        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID(), UUID.randomUUID(), "DDDD-4444", new LicenciaDigital(1, false));        clave.asignar(UUID.randomUUID(), Instant.now());
+        ClaveDigital clave = ClaveDigital.crear(UUID.randomUUID().toString(), UUID.randomUUID().toString(), "DDDD-4444", new LicenciaDigital(1, false));
+        clave.asignar(UUID.randomUUID().toString(), Instant.now());
         clave.canjear();
 
         // Act & Assert

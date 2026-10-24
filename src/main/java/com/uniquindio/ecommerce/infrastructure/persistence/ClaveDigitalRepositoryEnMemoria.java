@@ -4,29 +4,22 @@ import com.uniquindio.ecommerce.domain.entity.ClaveDigital;
 import com.uniquindio.ecommerce.domain.repository.ClaveDigitalRepository;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoClaveDigital;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
-  Implementación en memoria de ClaveDigitalRepository
-  Guarda las claves en un HashMap mientras la aplicación esté corriendo.
- */
 public class ClaveDigitalRepositoryEnMemoria implements ClaveDigitalRepository {
 
-    private final Map<UUID, ClaveDigital> claves = new HashMap<>();
+    private final Map<String, ClaveDigital> claves = new ConcurrentHashMap<>();
 
     @Override
-    public Optional<ClaveDigital> obtenerPorId(UUID id) {
+    public Optional<ClaveDigital> obtenerPorId(String id) {
         return Optional.ofNullable(claves.get(id));
     }
 
     @Override
-    public Optional<ClaveDigital> obtenerDisponiblePorOferta(UUID ofertaId) {
+    public Optional<ClaveDigital> obtenerDisponiblePorOferta(String ofertaId) {
         return claves.values().stream()
-                .filter(clave -> clave.getOfertaId().equals(ofertaId))
-                .filter(clave -> clave.getEstado() == EstadoClaveDigital.DISPONIBLE)
+                .filter(c -> c.getOfertaId().equals(ofertaId) && c.getEstado() == EstadoClaveDigital.DISPONIBLE)
                 .findFirst();
     }
 

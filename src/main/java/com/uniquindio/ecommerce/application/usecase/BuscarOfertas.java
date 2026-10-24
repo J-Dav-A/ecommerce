@@ -39,4 +39,9 @@ public class BuscarOfertas {
         }
         return ofertaRepository.masVendidas(limite);
     }
+
+    @Transactional(readOnly = true)
+    public Oferta obtener(String id) {
+        return ofertaRepository.obtenerPorId(id).orElseThrow();
+    }
 }

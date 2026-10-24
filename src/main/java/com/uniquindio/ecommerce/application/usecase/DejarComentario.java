@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -18,11 +19,17 @@ public class DejarComentario {
     private final VerificadorDeCompra verificadorDeCompra;
 
     @Transactional
-    public void ejecutar(String compradorId, String ofertaId, String texto) {
+    public Comentario ejecutar(String compradorId, String ofertaId, String texto) {
         if (!verificadorDeCompra.haCompradoOferta(compradorId, ofertaId)) {
             throw new ReglaDominioException("El usuario debe haber comprado la oferta para dejar un comentario.");
         }
-        Comentario comentario = Comentario.crear(UUID.randomUUID().toString(), ofertaId, compradorId, texto);
+        Comentario comentario = Comentario.crear(UUID.randomUUID().toString(), compradorId, ofertaId, texto);
         comentarioRepository.guardar(comentario);
+        return comentario;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Comentario> listarPorOferta(String ofertaId) {
+        return comentarioRepository.buscarPorOfertaId(ofertaId);
     }
 }

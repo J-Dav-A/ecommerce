@@ -1,4 +1,8 @@
 package com.uniquindio.ecommerce.infrastructure.rest.dto;
 
-public class RegistroUsuarioDTO {
-}
+public record RegistroUsuarioDTO(
+        String nombre,
+        String email,
+        String password,
+        String rol // ej: "COMPRADOR" o "VENDEDOR"
+) {}

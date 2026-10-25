@@ -1,6 +1,9 @@
 package com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,29 +12,26 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "usuarios")
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class UsuarioEntity {
 
     @Id
-    @Column(length = 36)
     private String id;
-
-    @Column(nullable = false, length = 120)
     private String nombre;
-
-    @Column(nullable = false, unique = true, length = 120)
     private String email;
-
-    @Column(nullable = false, length = 255)
     private String contrasena;
-
-    @Column(length = 20)
     private String telefono;
-
-    @Column(nullable = false, length = 20)
+    private LocalDate fechaNacimiento;
     private String rol;
 
-    @Column(name = "fecha_nacimiento")
-    private LocalDate fechaNacimiento;
+    public String getPassword() {
+        return contrasena;
+    }
+
+    public void setPassword(String password) {
+        this.contrasena = password;
+    }
 }

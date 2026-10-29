@@ -11,6 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 public class SecurityConfig {
@@ -44,12 +46,35 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
+                                "/api-docs",
+                                "/api-docs/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/h2-console/**"
                         ).permitAll()
-                        .requestMatchers("/api/ofertas/**").permitAll()
+                        // Registro de usuario: debe quedar abierto, antes de autenticarse
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+                        // Publicar y eliminar ofertas: solo vendedores
+                        .requestMatchers(HttpMethod.POST, "/api/ofertas").hasRole("VENDEDOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/ofertas/**").hasRole("VENDEDOR")
+                        // Catálogo de ofertas: lectura pública
+                        .requestMatchers(HttpMethod.GET, "/api/ofertas/**").permitAll()
+                        // Comprar y solicitar reembolso: solo compradores
+                        .requestMatchers(HttpMethod.POST, "/api/compras").hasRole("COMPRADOR")
+                        .requestMatchers(HttpMethod.POST, "/api/compras/*/reembolso").hasRole("COMPRADOR")
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"mensaje\":\"No autenticado\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"mensaje\":\"No tiene permisos para esta accion\"}");
+                        })
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

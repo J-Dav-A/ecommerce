@@ -15,10 +15,10 @@ public interface ClaveDigitalJpaDataRepository extends JpaRepository<ClaveDigita
 
     Optional<ClaveDigitalEntity> findFirstByOfertaIdAndEstado(String ofertaId, EstadoClaveDigital estado);
 
-    @Query("SELECT c FROM ClaveDigitalEntity c WHERE c.oferta.id = :ofertaId AND c.estado = :estado")
+    @Query("SELECT c FROM ClaveDigitalEntity c WHERE c.ofertaId = :ofertaId AND c.estado = :estado")
     List<ClaveDigitalEntity> buscarClavesPorOfertaYEstado(@Param("ofertaId") String ofertaId,
                                                           @Param("estado") EstadoClaveDigital estado);
 
-    @Query("SELECT COUNT(c) FROM ClaveDigitalEntity c WHERE c.oferta.id = :ofertaId AND c.estado = 'DISPONIBLE'")
+    @Query("SELECT COUNT(c) FROM ClaveDigitalEntity c WHERE c.ofertaId = :ofertaId AND c.estado = 'DISPONIBLE'")
     long contarClavesDisponibles(@Param("ofertaId") String ofertaId);
 }

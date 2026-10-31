@@ -135,3 +135,37 @@ Durante la integración de la rama de seguridad (`feature/erwin`) con la rama pr
 ## Pruebas automatizadas
 
 El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **18 pruebas**, todas en verde.
+
+## Pruebas avanzadas
+
+### 1. Endpoint con seguridad (401, 403 y 200)
+Probamos la ruta `DELETE /api/ofertas/{id}`, que solo puede usar un usuario con rol VENDEDOR.
+Sin token responde 401, porque el sistema no sabe quién es.
+Con token de un COMPRADOR responde 403: sabe quién es, pero no tiene permiso.
+Con token de un VENDEDOR responde 200 y la oferta se marca como ELIMINADA (no se borra de la base).
+Usamos `@SpringBootTest` y no `@WebMvcTest`, porque `@WebMvcTest` no carga nuestro `SecurityConfig`.
+La guía usa `jwt()`, pero eso necesita el módulo `oauth2-resource-server` y nosotros tenemos nuestro
+propio filtro JWT, así que generamos los tokens con nuestra clase `JwtUtils`.
+Lo que más nos costó: en `OfertaControllerTest` salía 401 en una ruta pública, porque `@WebMvcTest`
+aplicaba la seguridad por defecto de Spring y no la nuestra.
+
+### 2. @DataJpaTest contra @SpringBootTest
+`@DataJpaTest` levanta solo la parte de base de datos (entidades y repositorios) con una H2 en memoria,
+por eso es más rápido. `@SpringBootTest` levanta toda la aplicación.
+Como `@DataJpaTest` no carga nuestras clases propias, trajimos el adaptador y el mapper con `@Import`.
+`@DataJpaTest` ya viene con `@Transactional`, que deshace lo guardado al terminar cada prueba;
+en `@SpringBootTest` hay que ponerlo a mano si queremos lo mismo.
+Sobre Spring Boot 4: usamos Spring Boot 3.4.1, así que `@DataJpaTest` sigue en su paquete de siempre
+y no tuvimos que agregar ningún starter aparte.
+Lo que más nos costó fue justo eso: la guía hablaba del starter de Boot 4 y tuvimos que revisar
+nuestra versión para darnos cuenta de que no hacía falta.
+
+### 3. Prueba de integración
+Una prueba unitaria revisa una sola clase y lo demás lo simula con Mockito.
+Nuestra prueba de integración hace una compra real: la petición pasa por la seguridad, el controller,
+el caso de uso, el repositorio y la base de datos, sin simular nada.
+Al final, con `compraRepository` y `ofertaRepository`, comprobamos que el stock bajó y que la compra quedó guardada.
+También hay una segunda prueba: comprar una oferta que no existe responde 400 y no se guarda ninguna compra.
+Conviene para los flujos más importantes; como es más lenta, los casos raros los probamos con unitarias.
+Lo que más nos costó: los datos de prueba salen del `data.sql`, así que había que fijarse en los ids
+y el stock que hay ahí para saber qué resultado esperar.

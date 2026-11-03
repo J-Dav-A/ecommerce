@@ -5,7 +5,7 @@ Proyecto de la asignatura **Programación Avanzada**, Universidad del Quindío.
 ## Integrantes
 
 - Juan David Arango Valencia
-- Erwin Johannes Willem Harder Garzón
+- Erwin Harder Garzón
 
 ## Nicho
 
@@ -131,6 +131,12 @@ Durante la integración de la rama de seguridad (`feature/erwin`) con la rama pr
 | 8 | El botón "Authorize" no existía en Swagger | No había ningún `@SecurityScheme` definido | Se creó `OpenApiConfig` con `@SecurityScheme` de tipo bearer/JWT |
 | 9 | El token autorizado en Swagger no se enviaba en las peticiones | `@SecurityScheme` solo define el mecanismo, no lo activa globalmente | Se agregó `@OpenAPIDefinition(security = @SecurityRequirement(name = "bearerAuth"))` |
 | 10 | Peticiones sin permisos devolvían 401 en vez de 403 (rol incorrecto) | `response.sendError(...)` en los manejadores de excepciones de seguridad disparaba un *forward* interno a `/error`, que Spring Security volvía a evaluar y sobrescribía el código de estado original | Se reemplazó `sendError(...)` por escritura directa de la respuesta (`setStatus` + `getWriter().write(...)`) |
+
+| # | Problema detectado | Causa | Corrección |
+|---|---|---|---|
+| 1 | Los casos de uso contenían lógica de negocio y no se limitaban a orquestar las operaciones. | Se mezclaban las responsabilidades de la capa de aplicación con las reglas que debían pertenecer al dominio. | Se refactorizaron los casos de uso para delegar las reglas de negocio a las entidades y servicios de dominio, manteniendo en aplicación únicamente la orquestación de las operaciones. |
+### Correcciones arquitectónicas (casos de uso)
+
 Durante la revisión del proyecto se identificaron problemas
 arquitectónicos relacionados con la separación de responsabilidades
 entre la capa de aplicación y el dominio. Se realizaron las siguientes
@@ -139,6 +145,7 @@ correcciones principales:
 | # | Problema detectado | Causa | Corrección |
 |---|---|---|---|
 | 1 | Los casos de uso contenían lógica de negocio y no se limitaban a orquestar las operaciones. | Se mezclaban las responsabilidades de la capa de aplicación con las reglas que debían pertenecer al dominio. | Se refactorizaron los casos de uso para delegar las reglas de negocio a las entidades y servicios de dominio, manteniendo en aplicación únicamente la orquestación de las operaciones. |
+
 ## Pruebas automatizadas
 
 El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **18 pruebas**, todas en verde.

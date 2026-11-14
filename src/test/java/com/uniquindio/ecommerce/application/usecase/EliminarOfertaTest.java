@@ -1,6 +1,7 @@
 package com.uniquindio.ecommerce.application.usecase;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoOferta;
 import com.uniquindio.ecommerce.domain.valueobject.Precio;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class EliminarOfertaTest {
 
@@ -31,5 +33,19 @@ class EliminarOfertaTest {
         // Assert
         Oferta ofertaEliminada = ofertaRepository.obtenerPorId(oferta.getId()).orElseThrow();
         assertEquals(EstadoOferta.ELIMINADA, ofertaEliminada.getEstado());
+    }
+
+    @Test
+    void noDebeEliminarUnaOfertaQueNoExiste() {
+        // Arrange
+        EliminarOferta eliminarOferta = new EliminarOferta(new OfertaRepositoryEnMemoria());
+
+        // Act
+        RecursoNoEncontradoException excepcion = assertThrows(
+                RecursoNoEncontradoException.class,
+                () -> eliminarOferta.ejecutar("no-existe"));
+
+        // Assert
+        assertEquals("La oferta no existe", excepcion.getMessage());
     }
 }

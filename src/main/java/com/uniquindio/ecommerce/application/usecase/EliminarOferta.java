@@ -1,6 +1,7 @@
 package com.uniquindio.ecommerce.application.usecase;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public class EliminarOferta {
 
     @Transactional
     public void ejecutar(String ofertaId) {
-        Oferta oferta = ofertaRepository.obtenerPorId(ofertaId).orElseThrow();
+        Oferta oferta = ofertaRepository.obtenerPorId(ofertaId).orElseThrow(() -> new RecursoNoEncontradoException("La oferta no existe"));
         oferta.eliminar();
         ofertaRepository.guardar(oferta);
     }

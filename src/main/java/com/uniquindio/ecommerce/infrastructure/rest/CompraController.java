@@ -8,9 +8,11 @@ import com.uniquindio.ecommerce.application.usecase.RegistrarCompra;
 import com.uniquindio.ecommerce.application.usecase.SolicitarReembolso;
 import com.uniquindio.ecommerce.domain.entity.Compra;
 import com.uniquindio.ecommerce.infrastructure.rest.mapper.CompraMapper;
+import com.uniquindio.ecommerce.infrastructure.security.UsuarioPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -27,10 +29,11 @@ public class CompraController {
     private final CompraMapper mapper;
 
     @PostMapping
-    public ResponseEntity<CompraDetalleResponse> crear(@Valid @RequestBody RegistrarCompraRequest request) {
+    public ResponseEntity<CompraDetalleResponse> crear(@Valid @RequestBody RegistrarCompraRequest request,
+                                                       @AuthenticationPrincipal UsuarioPrincipal usuario) {
         Compra compra = registrarCompraUseCase.ejecutar(
                 request.ofertaId(),
-                request.compradorId()
+                usuario.getId()
         );
 
         CompraDetalleResponse response = mapper.toDetalleResponse(compra);
@@ -51,8 +54,10 @@ public class CompraController {
     }
 
     @PostMapping("/{id}/reembolso")
-    public ResponseEntity<Void> solicitarReembolso(@PathVariable String id, @Valid @RequestBody SolicitarReembolsoRequest request) {
-        solicitarReembolsoUseCase.ejecutar(id, request.motivo());
+    public ResponseEntity<Void> solicitarReembolso(@PathVariable String id,
+                                                   @Valid @RequestBody SolicitarReembolsoRequest request,
+                                                   @AuthenticationPrincipal UsuarioPrincipal usuario) {
+        solicitarReembolsoUseCase.ejecutar(id, usuario.getId(), request.motivo());
         return ResponseEntity.ok().build();
     }
 }

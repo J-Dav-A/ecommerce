@@ -1,6 +1,7 @@
 package com.uniquindio.ecommerce.application.usecase;
 
 import com.uniquindio.ecommerce.domain.entity.Compra;
+import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public class ConfirmarCompraUseCase {
 
     @Transactional
     public void ejecutar(String compraId) {
-        Compra compra = repository.obtenerPorId(compraId).orElseThrow();
+        Compra compra = repository.obtenerPorId(compraId).orElseThrow(() -> new RecursoNoEncontradoException("La compra no existe"));
         compra.confirmar();
         repository.guardar(compra);
     }

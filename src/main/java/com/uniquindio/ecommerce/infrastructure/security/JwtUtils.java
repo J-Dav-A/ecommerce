@@ -11,10 +11,10 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret:claveSecretaSuperSeguraParaFirmarLosTokensJWTDelMarketplace123456}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration:86400000}") // 24 horas en milisegundos
+    @Value("${jwt.expiration}")
     private long jwtExpirationMs;
 
     private Key getSigningKey() {

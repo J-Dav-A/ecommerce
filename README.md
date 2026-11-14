@@ -54,6 +54,10 @@ La aplicación queda disponible en `http://localhost:8080`.
 - `http://localhost:8080/h2-console`
 - JDBC URL: `jdbc:h2:mem:ecommercedb`, usuario `sa`, contraseña en blanco.
 
+### Configuración del JWT
+
+La clave de firma y la duración del token están en `application.properties` (`jwt.secret` y `jwt.expiration`, en milisegundos). La clave se puede sobrescribir con la variable de entorno `JWT_SECRET` sin tocar el código.
+
 ### Ejecutar las pruebas
 
 ```bash
@@ -101,17 +105,27 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
-| POST | `/api/compras` | COMPRADOR | Registra una compra sobre una oferta |
+| POST | `/api/compras` | COMPRADOR | Registra una compra sobre una oferta. El comprador se toma del token, no del cuerpo (solo se envía `ofertaId`) |
 | PUT | `/api/compras/{id}/confirmar` | Autenticado | Confirma una compra (entrega la clave digital) |
-| POST | `/api/compras/{id}/reembolso` | COMPRADOR | Solicita reembolso de una compra |
-| GET | `/api/compras?compradorId=` | Autenticado | Historial de compras de un comprador |
+| POST | `/api/compras/{id}/reembolso` | COMPRADOR | Solicita reembolso de una compra propia (si la compra es de otro comprador responde 404) |
+| GET | `/api/compras` | Autenticado | Historial de compras del usuario del token |
 
 ### Comentarios (`/api/comentarios`)
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
-| POST | `/api/comentarios` | Autenticado | Deja un comentario sobre una oferta comprada |
+| POST | `/api/comentarios` | Autenticado | Deja un comentario sobre una oferta comprada (el autor se toma del token) |
 | GET | `/api/comentarios?ofertaId=` | Autenticado | Lista comentarios de una oferta |
+
+### Códigos de error
+
+| Código | Cuándo |
+|---|---|
+| 400 | Datos de entrada inválidos (`@Valid`): el mensaje indica qué campo falló |
+| 401 | Sin token o token inválido |
+| 403 | Token válido pero con el rol equivocado |
+| 404 | El recurso no existe (oferta, compra, clave...), con el mismo formato en todos los casos |
+| 422 | La petición es válida pero rompe una regla de negocio (`ReglaDominioException`) |
 
 > Nota: las rutas marcadas "Autenticado" exigen un JWT válido (cualquier rol); las de VENDEDOR/COMPRADOR exigen además ese rol específico.
 
@@ -143,9 +157,19 @@ correcciones principales:
 |---|---|---|---|
 | 1 | Los casos de uso contenían lógica de negocio y no se limitaban a orquestar las operaciones. | Se mezclaban las responsabilidades de la capa de aplicación con las reglas que debían pertenecer al dominio. | Se refactorizaron los casos de uso para delegar las reglas de negocio a las entidades y servicios de dominio, manteniendo en aplicación únicamente la orquestación de las operaciones. |
 
+## Correcciones tras la retroalimentación de la Entrega 2
+
+| # | Observación | Qué cambiamos | Dónde se ve |
+|---|---|---|---|
+| 1 | El id del comprador se tomaba del cuerpo de la petición, así que un COMPRADOR podía comprar, reembolsar o comentar a nombre de otro | El id sale del usuario autenticado (`@AuthenticationPrincipal UsuarioPrincipal`); se quitó `compradorId` de los DTO de compra y comentario; el historial usa el usuario del token; el reembolso solo funciona sobre compras propias (`Compra.perteneceA`) | `CompraController`, `ComentarioController`, `ConsultaComprasController`, `UsuarioPrincipal`, `IdentidadDelTokenIntegracionTest` |
+| 2 | La regla de negocio rota devolvía 400 | `ReglaDominioException` ahora responde 422; los datos de entrada inválidos siguen en 400 con mensaje por campo | `GlobalExceptionHandler`, `CompraControllerErroresTest` |
+| 3 | "No encontrado" se manejaba distinto en ofertas y compras (400 con mensaje en un caso, 404 genérico en el otro) | Nueva `RecursoNoEncontradoException`: todos los casos de uso responden 404 con un mensaje claro | `RecursoNoEncontradoException`, casos de uso, `GlobalExceptionHandler` |
+| 4 | Pruebas de casos de uso cortas frente a los diez casos de uso | Pruebas nuevas para los diez casos de uso, incluidos los que fallan por regla de negocio | `src/test/.../application/usecase` |
+| 5 | La clave y la duración del JWT estaban escritas en el código | Pasaron a `application.properties` (la clave puede sobrescribirse con `JWT_SECRET`) | `application.properties`, `JwtUtils` |
+
 ## Pruebas automatizadas
 
-El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **32 pruebas**, todas en verde.
+El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **63 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
 
 ## Pruebas avanzadas
 

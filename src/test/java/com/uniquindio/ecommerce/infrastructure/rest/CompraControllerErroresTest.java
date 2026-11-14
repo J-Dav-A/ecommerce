@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 // Aquí el caso de uso ConfirmarCompraUseCase es el REAL (se trae con @Import) y lo que se simula es el
 // repositorio. Así se puede comprobar de verdad que guardar() nunca se llama cuando algo falla.
-// El GlobalExceptionHandler real es el que convierte cada excepción en 404 o 400.
+// El GlobalExceptionHandler real es el que convierte cada excepción en 404 o 422.
 // addFilters = false quita la seguridad solo en este test: la seguridad se prueba aparte.
 @WebMvcTest(
         controllers = CompraController.class,
@@ -75,7 +75,7 @@ class CompraControllerErroresTest {
     }
 
     @Test
-    void deberiaResponder400YNoGuardarCuandoSeRompeUnaReglaDeNegocio() throws Exception {
+    void deberiaResponder422YNoGuardarCuandoSeRompeUnaReglaDeNegocio() throws Exception {
         // Arrange: una compra ya REEMBOLSADA no puede confirmarse (regla de dominio)
         Compra reembolsada = Compra.reconstruir("c-1", "o-101", "u-2",
                 new Precio(new BigDecimal("59.99"), "USD"), LocalDateTime.now(), EstadoCompra.REEMBOLSADA);
@@ -85,7 +85,7 @@ class CompraControllerErroresTest {
         ResultActions respuesta = mockMvc.perform(put("/api/compras/{id}/confirmar", "c-1"));
 
         // Assert
-        respuesta.andExpect(status().isBadRequest())
+        respuesta.andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.mensaje").value("Una compra reembolsada no puede modificarse"));
         verify(compraRepository, never()).guardar(any());
     }

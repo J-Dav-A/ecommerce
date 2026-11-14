@@ -2,6 +2,7 @@ package com.uniquindio.ecommerce.application.usecase;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
+import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaVentas;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
@@ -42,6 +43,6 @@ public class BuscarOfertas {
 
     @Transactional(readOnly = true)
     public Oferta obtener(String id) {
-        return ofertaRepository.obtenerPorId(id).orElseThrow();
+        return ofertaRepository.obtenerPorId(id).orElseThrow(() -> new RecursoNoEncontradoException("La oferta no existe"));
     }
 }

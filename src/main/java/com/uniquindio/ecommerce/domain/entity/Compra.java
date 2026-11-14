@@ -57,6 +57,10 @@ public class Compra {
         this.estado = EstadoCompra.REEMBOLSADA;
     }
 
+    public boolean perteneceA(String compradorId) {
+        return this.compradorId.equals(compradorId);
+    }
+
     private void verificarQueNoEsteReembolsada() {
         if (this.estado.esFinal()) {
             throw new ReglaDominioException("Una compra reembolsada no puede modificarse");

@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface ComentarioJpaDataRepository extends JpaRepository<ComentarioEntity, String> {
 
-    List<ComentarioEntity> findByOfertaId(String ofertaId);
+    List<ComentarioEntity> findByOfertaIdOrderByFechaDesc(String ofertaId);
+
+    boolean existsByCompraId(String compraId);
 }

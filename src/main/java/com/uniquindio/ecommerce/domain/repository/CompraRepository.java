@@ -11,5 +11,6 @@ public interface CompraRepository {
     boolean existeCompraCompletada(String compradorId, String ofertaId);
     List<Compra> obtenerPorCompradorId(String compradorId);
     // Hay compras de la oferta (no reembolsadas) hechas después de "desde"
+    List<Compra> obtenerPorOfertaId(String ofertaId);
     boolean existenComprasRecientes(String ofertaId, LocalDateTime desde);
 }

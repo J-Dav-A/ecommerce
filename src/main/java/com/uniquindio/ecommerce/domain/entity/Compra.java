@@ -61,6 +61,10 @@ public class Compra {
         return this.compradorId.equals(compradorId);
     }
 
+    public boolean estaCompletada() {
+        return this.estado == EstadoCompra.COMPLETADA;
+    }
+
     public boolean estaActiva() {
         return this.estado != EstadoCompra.REEMBOLSADA;
     }

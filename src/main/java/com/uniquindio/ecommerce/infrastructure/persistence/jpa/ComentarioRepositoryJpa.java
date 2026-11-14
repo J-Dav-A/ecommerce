@@ -23,9 +23,14 @@ public class ComentarioRepositoryJpa implements ComentarioRepository {
 
     @Override
     public List<Comentario> buscarPorOfertaId(String ofertaId) {
-        return dataRepository.findByOfertaId(ofertaId).stream()
+        return dataRepository.findByOfertaIdOrderByFechaDesc(ofertaId).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public boolean existePorCompraId(String compraId) {
+        return dataRepository.existsByCompraId(compraId);
     }
 
     @Override

@@ -78,6 +78,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/ofertas/**").hasRole("VENDEDOR")
                         // Catálogo de ofertas: lectura pública
                         .requestMatchers(HttpMethod.GET, "/api/ofertas/**").permitAll()
+                        // Comentarios: lectura pública; comentar solo compradores; responder solo vendedores
+                        .requestMatchers(HttpMethod.GET, "/api/comentarios").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/comentarios").hasRole("COMPRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/comentarios/*/respuesta").hasRole("VENDEDOR")
                         // Cargar claves a una oferta y ver "mis ofertas": solo vendedores
                         .requestMatchers(HttpMethod.POST, "/api/ofertas/*/claves").hasRole("VENDEDOR")
                         .requestMatchers("/api/vendedor/**").hasRole("VENDEDOR")

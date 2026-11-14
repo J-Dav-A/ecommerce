@@ -1,11 +1,11 @@
 package com.uniquindio.ecommerce.application.usecase;
 
+import com.uniquindio.ecommerce.application.usecase.ConsultarComentariosDeOferta.ResumenComentarios;
 import com.uniquindio.ecommerce.domain.entity.Comentario;
 import com.uniquindio.ecommerce.domain.entity.Compra;
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
 import com.uniquindio.ecommerce.domain.repository.ComentarioRepository;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
-import com.uniquindio.ecommerce.domain.service.VerificadorDeCompra;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoCompra;
 import com.uniquindio.ecommerce.domain.valueobject.Precio;
 import com.uniquindio.ecommerce.infrastructure.persistence.ComentarioRepositoryEnMemoria;
@@ -24,35 +24,37 @@ class DejarComentarioTest {
 
     private final CompraRepository compraRepository = new CompraRepositoryEnMemoria();
     private final ComentarioRepository comentarioRepository = new ComentarioRepositoryEnMemoria();
-    private final DejarComentario dejarComentario =
-            new DejarComentario(comentarioRepository, new VerificadorDeCompra(compraRepository));
+    private final DejarComentario dejarComentario = new DejarComentario(comentarioRepository, compraRepository);
+    private final ConsultarComentariosDeOferta consultarComentarios = new ConsultarComentariosDeOferta(comentarioRepository);
 
-    private void guardarCompraCompletada(String compradorId, String ofertaId) {
-        compraRepository.guardar(Compra.reconstruir("c-" + compradorId + ofertaId, ofertaId, compradorId,
-                new Precio(new BigDecimal("30"), "USD"), LocalDateTime.now(), EstadoCompra.COMPLETADA));
+    private void guardarCompra(String id, String compradorId, String ofertaId, EstadoCompra estado) {
+        compraRepository.guardar(Compra.reconstruir(id, ofertaId, compradorId,
+                new Precio(new BigDecimal("30"), "USD"), LocalDateTime.now(), estado));
     }
 
     @Test
-    void quienCompraLaOfertaPuedeComentarla() {
+    void quienTieneUnaCompraCompletadaPuedeComentarYCalificar() {
         // Arrange
-        guardarCompraCompletada("u-1", "o-1");
+        guardarCompra("c-1", "u-1", "o-1", EstadoCompra.COMPLETADA);
 
         // Act
-        Comentario comentario = dejarComentario.ejecutar("u-1", "o-1", "Excelente juego");
+        Comentario comentario = dejarComentario.ejecutar("u-1", "o-1", "Excelente juego", 5);
 
         // Assert
-        List<Comentario> guardados = comentarioRepository.buscarPorOfertaId("o-1");
-        assertEquals(1, guardados.size());
-        assertEquals(comentario.getId(), guardados.get(0).getId());
+        Comentario guardado = comentarioRepository.obtenerPorId(comentario.getId()).orElseThrow();
+        assertEquals("c-1", guardado.getCompraId());
+        assertEquals(5, guardado.getCalificacion());
+        assertEquals("Excelente juego", guardado.getTexto());
     }
 
     @Test
-    void noDebeComentarQuienNoHaCompradoLaOferta() {
-        // Arrange: u-2 no tiene ninguna compra completada de o-1
+    void noDebeComentarQuienSoloTieneUnaCompraPendiente() {
+        // Arrange
+        guardarCompra("c-2", "u-1", "o-1", EstadoCompra.PENDIENTE);
 
         // Act
         ReglaDominioException excepcion = assertThrows(ReglaDominioException.class,
-                () -> dejarComentario.ejecutar("u-2", "o-1", "Me parece bueno"));
+                () -> dejarComentario.ejecutar("u-1", "o-1", "Me parece bueno", 4));
 
         // Assert
         assertEquals("El usuario debe haber comprado la oferta para dejar un comentario.", excepcion.getMessage());
@@ -60,28 +62,59 @@ class DejarComentarioTest {
     }
 
     @Test
-    void noDebeGuardarUnComentarioVacio() {
+    void noDebePermitirDosComentariosSobreLaMismaCompra() {
         // Arrange
-        guardarCompraCompletada("u-1", "o-1");
+        guardarCompra("c-3", "u-1", "o-1", EstadoCompra.COMPLETADA);
+        dejarComentario.ejecutar("u-1", "o-1", "Primer comentario", 5);
+
+        // Act
+        ReglaDominioException excepcion = assertThrows(ReglaDominioException.class,
+                () -> dejarComentario.ejecutar("u-1", "o-1", "Segundo comentario", 1));
+
+        // Assert
+        assertEquals("Ya comentaste esta compra", excepcion.getMessage());
+        assertEquals(1, comentarioRepository.buscarPorOfertaId("o-1").size());
+    }
+
+    @Test
+    void noDebeGuardarCalificacionesFueraDeRangoNiTextosInvalidos() {
+        // Arrange
+        guardarCompra("c-4", "u-1", "o-1", EstadoCompra.COMPLETADA);
 
         // Act & Assert
-        assertThrows(ReglaDominioException.class, () -> dejarComentario.ejecutar("u-1", "o-1", "  "));
+        assertThrows(ReglaDominioException.class, () -> dejarComentario.ejecutar("u-1", "o-1", "Texto", 0));
+        assertThrows(ReglaDominioException.class, () -> dejarComentario.ejecutar("u-1", "o-1", "Texto", 6));
+        assertThrows(ReglaDominioException.class, () -> dejarComentario.ejecutar("u-1", "o-1", "  ", 4));
+        assertThrows(ReglaDominioException.class, () -> dejarComentario.ejecutar("u-1", "o-1", "a".repeat(501), 4));
         assertTrue(comentarioRepository.buscarPorOfertaId("o-1").isEmpty());
     }
 
     @Test
-    void deberiaListarSoloLosComentariosDeLaOfertaPedida() {
+    void deberiaListarElMasRecientePrimeroYCalcularElPromedio() {
         // Arrange
-        guardarCompraCompletada("u-1", "o-1");
-        guardarCompraCompletada("u-1", "o-2");
-        dejarComentario.ejecutar("u-1", "o-1", "Comentario de la oferta 1");
-        dejarComentario.ejecutar("u-1", "o-2", "Comentario de la oferta 2");
+        comentarioRepository.guardar(Comentario.reconstruir("m-1", "u-1", "o-1", "c-1", "Antiguo", 5,
+                LocalDateTime.now().minusDays(2), null, null));
+        comentarioRepository.guardar(Comentario.reconstruir("m-2", "u-2", "o-1", "c-2", "Reciente", 3,
+                LocalDateTime.now().minusHours(1), null, null));
+        comentarioRepository.guardar(Comentario.reconstruir("m-3", "u-3", "o-2", "c-3", "De otra oferta", 1,
+                LocalDateTime.now(), null, null));
 
         // Act
-        List<Comentario> comentarios = dejarComentario.listarPorOferta("o-1");
+        ResumenComentarios resumen = consultarComentarios.ejecutar("o-1");
 
         // Assert
-        assertEquals(1, comentarios.size());
-        assertEquals("Comentario de la oferta 1", comentarios.get(0).getTexto());
+        List<String> ids = resumen.comentarios().stream().map(Comentario::getId).toList();
+        assertEquals(List.of("m-2", "m-1"), ids);
+        assertEquals(4.0, resumen.promedioCalificacion());
+    }
+
+    @Test
+    void elPromedioEsCeroCuandoLaOfertaNoTieneComentarios() {
+        // Act
+        ResumenComentarios resumen = consultarComentarios.ejecutar("o-sin-comentarios");
+
+        // Assert
+        assertEquals(0.0, resumen.promedioCalificacion());
+        assertTrue(resumen.comentarios().isEmpty());
     }
 }

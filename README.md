@@ -123,8 +123,16 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
-| POST | `/api/comentarios` | Autenticado | Deja un comentario sobre una oferta comprada (el autor se toma del token) |
-| GET | `/api/comentarios?ofertaId=` | Autenticado | Lista comentarios de una oferta |
+| POST | `/api/comentarios` | COMPRADOR | Deja un comentario con calificación de 1 a 5 (máx. 500 caracteres) sobre una oferta con compra completada. El autor sale del token; un comentario por compra |
+| GET | `/api/comentarios?ofertaId=` | Público | Devuelve `{promedioCalificacion, total, comentarios}` con el más reciente primero |
+| PUT | `/api/comentarios/{id}/respuesta` | VENDEDOR | El vendedor dueño de la oferta responde el comentario (una sola respuesta, máx. 500 caracteres) |
+
+### Panel del vendedor (comentarios y métricas)
+
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/vendedor/comentarios?sinResponder=true` | VENDEDOR | Comentarios de las ofertas del vendedor; el filtro deja solo los pendientes de respuesta |
+| GET | `/api/vendedor/metricas?desde=&hasta=` | VENDEDOR | Por oferta: ventas completadas, calificación promedio y total de comentarios. Fechas opcionales (`yyyy-MM-dd`, inclusivas) |
 
 ### Reglas de negocio de la compra
 
@@ -185,10 +193,11 @@ correcciones principales:
 | 7 | `PUT /confirmar` lo podía usar cualquier usuario | Solo el comprador dueño de la compra puede confirmarla | `ConfirmarCompraUseCase` |
 | 8 | El comprador nunca recibía la clave y el vendedor no podía cargarlas | Endpoints `POST /api/compras/{id}/clave` y `POST /api/ofertas/{id}/claves`; el reembolso respeta el plazo de 48 horas y la clave canjeada | `ClaveDigitalController`, `EntregarClaveDigital`, `CargarClaveDigital`, `SolicitarReembolso` |
 | 9 | Se podía comprar dos veces lo mismo y comprar ofertas eliminadas | `RegistrarCompra` rechaza ambos casos con 422 | `RegistrarCompra`, `RegistrarCompraReglasTest` |
+| 10 | Los comentarios no tenían calificación, no se podía responderlos ni medir el desempeño de una oferta | Calificación 1–5, un comentario por compra, respuesta única del vendedor, bandeja de pendientes y métricas por rango de fechas | `Comentario`, `DejarComentario`, `ResponderComentario`, `ConsultarMetricasDelVendedor`, `ComentariosIntegracionTest` |
 
 ## Pruebas automatizadas
 
-El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **90 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
+El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **111 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
 
 ## Pruebas avanzadas
 

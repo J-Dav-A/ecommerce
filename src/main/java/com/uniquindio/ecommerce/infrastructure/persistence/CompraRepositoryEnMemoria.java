@@ -38,6 +38,13 @@ public class CompraRepositoryEnMemoria implements CompraRepository {
     }
 
     @Override
+    public List<Compra> obtenerPorOfertaId(String ofertaId) {
+        return compras.values().stream()
+                .filter(c -> c.getOfertaId().equals(ofertaId))
+                .toList();
+    }
+
+    @Override
     public boolean existenComprasRecientes(String ofertaId, LocalDateTime desde) {
         return compras.values().stream()
                 .anyMatch(c -> c.getOfertaId().equals(ofertaId)

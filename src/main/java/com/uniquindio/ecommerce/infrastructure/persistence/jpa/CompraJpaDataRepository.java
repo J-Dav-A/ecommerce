@@ -17,6 +17,8 @@ public interface CompraJpaDataRepository extends JpaRepository<CompraEntity, Str
 
     List<CompraEntity> findByCompradorIdOrderByFechaCompraDesc(String compradorId);
 
+    List<CompraEntity> findByOfertaIdOrderByFechaCompraDesc(String ofertaId);
+
     boolean existsByOfertaIdAndEstadoNotAndFechaCompraAfter(String ofertaId, EstadoCompra estado, LocalDateTime desde);
 
     @Query("SELECT c FROM CompraEntity c WHERE c.compradorId = :compradorId ORDER BY c.fechaCompra DESC")

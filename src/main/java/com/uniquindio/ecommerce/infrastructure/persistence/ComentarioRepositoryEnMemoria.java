@@ -19,7 +19,13 @@ public class ComentarioRepositoryEnMemoria implements ComentarioRepository {
     public List<Comentario> buscarPorOfertaId(String ofertaId) {
         return comentarios.values().stream()
                 .filter(c -> c.getOfertaId().equals(ofertaId))
+                .sorted(Comparator.comparing(Comentario::getFecha).reversed())
                 .toList();
+    }
+
+    @Override
+    public boolean existePorCompraId(String compraId) {
+        return comentarios.values().stream().anyMatch(c -> c.getCompraId().equals(compraId));
     }
 
     @Override

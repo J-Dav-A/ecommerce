@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "comentarios")
 @Getter @Setter
@@ -21,6 +23,21 @@ public class ComentarioEntity {
     @Column(name = "oferta_id", nullable = false, length = 50)
     private String ofertaId;
 
+    @Column(name = "compra_id", nullable = false, length = 50)
+    private String compraId;
+
     @Column(nullable = false, length = 500)
     private String texto;
+
+    @Column(nullable = false)
+    private int calificacion;
+
+    @Column(nullable = false)
+    private LocalDateTime fecha;
+
+    @Column(length = 500)
+    private String respuesta;
+
+    @Column(name = "fecha_respuesta")
+    private LocalDateTime fechaRespuesta;
 }

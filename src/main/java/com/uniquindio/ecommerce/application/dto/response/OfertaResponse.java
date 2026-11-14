@@ -2,6 +2,8 @@ package com.uniquindio.ecommerce.application.dto.response;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
 
+import java.util.List;
+
 public record OfertaResponse(
         String id,
         String vendedorId,
@@ -10,7 +12,8 @@ public record OfertaResponse(
         String precioMoneda,
         int stock,
         String plataforma,
-        String estado
+        String estado,
+        List<String> imagenes
 ) {
     public static OfertaResponse desde(Oferta oferta) {
         return new OfertaResponse(
@@ -21,7 +24,8 @@ public record OfertaResponse(
                 oferta.getPrecio().moneda(),
                 oferta.getStock(),
                 oferta.getPlataforma() == null ? null : oferta.getPlataforma().name(),
-                oferta.getEstado().name()
+                oferta.getEstado().name(),
+                oferta.getImagenes()
         );
     }
 }

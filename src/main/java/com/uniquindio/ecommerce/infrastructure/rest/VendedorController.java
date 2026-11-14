@@ -3,9 +3,12 @@ package com.uniquindio.ecommerce.infrastructure.rest;
 import com.uniquindio.ecommerce.application.dto.response.ComentarioResponse;
 import com.uniquindio.ecommerce.application.dto.response.MetricaOfertaResponse;
 import com.uniquindio.ecommerce.application.dto.response.OfertaResponse;
+import com.uniquindio.ecommerce.application.dto.response.VentaResponse;
 import com.uniquindio.ecommerce.application.usecase.ConsultarMetricasDelVendedor;
+import com.uniquindio.ecommerce.application.usecase.ConsultarVentasDelVendedor;
 import com.uniquindio.ecommerce.application.usecase.ListarComentariosDelVendedor;
 import com.uniquindio.ecommerce.application.usecase.ListarOfertasDelVendedor;
+import com.uniquindio.ecommerce.domain.valueobject.EstadoCompra;
 import com.uniquindio.ecommerce.infrastructure.security.UsuarioPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,11 +29,24 @@ public class VendedorController {
     private final ListarOfertasDelVendedor listarOfertasDelVendedor;
     private final ListarComentariosDelVendedor listarComentariosDelVendedor;
     private final ConsultarMetricasDelVendedor consultarMetricasDelVendedor;
+    private final ConsultarVentasDelVendedor consultarVentasDelVendedor;
 
     @GetMapping("/ofertas")
     public List<OfertaResponse> misOfertas(@AuthenticationPrincipal UsuarioPrincipal usuario) {
         return listarOfertasDelVendedor.ejecutar(usuario.getId()).stream()
                 .map(OfertaResponse::desde)
+                .toList();
+    }
+
+    // Historial de ventas con filtros opcionales: rango de fechas (AAAA-MM-DD) y estado de la compra
+    @GetMapping("/ventas")
+    public List<VentaResponse> ventas(
+            @RequestParam(name = "desde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(name = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(name = "estado", required = false) EstadoCompra estado,
+            @AuthenticationPrincipal UsuarioPrincipal usuario) {
+        return consultarVentasDelVendedor.ejecutar(usuario.getId(), desde, hasta, estado).stream()
+                .map(VentaResponse::desde)
                 .toList();
     }
 

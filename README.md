@@ -99,6 +99,7 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 | GET | `/api/ofertas/mas-vendidas` | Público | Top ofertas más vendidas (parámetro `limite`) |
 | GET | `/api/ofertas/{id}` | Público | Consulta el detalle de una oferta |
 | POST | `/api/ofertas` | VENDEDOR | Publica una nueva oferta. El vendedor se toma del token (no se envía `vendedorId`) |
+| PUT | `/api/ofertas/{id}` | VENDEDOR | Edita una oferta propia (título, precio, stock, plataforma) y opcionalmente su galería `imagenes` (hasta 10 URLs http/https; si no se envía, la galería no cambia; si se envía, la reemplaza). Una oferta publicada no puede quedarse sin stock ni editarse si está eliminada |
 | DELETE | `/api/ofertas/{id}` | VENDEDOR | Elimina (lógicamente) una oferta propia, solo si no tiene compras de las últimas 48 horas sujetas a reembolso |
 | POST | `/api/ofertas/{id}/claves` | VENDEDOR | El dueño de la oferta le carga una clave digital (`codigo`, `maxActivaciones`, `transferible`) |
 
@@ -131,6 +132,7 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
+| GET | `/api/vendedor/ventas?desde=&hasta=&estado=` | VENDEDOR | Historial de compras sobre las ofertas del vendedor (incluidas las eliminadas), el más reciente primero. Filtros opcionales: rango de fechas `yyyy-MM-dd` (inclusivo) y `estado` (`PENDIENTE`, `COMPLETADA`, `REEMBOLSADA`) |
 | GET | `/api/vendedor/comentarios?sinResponder=true` | VENDEDOR | Comentarios de las ofertas del vendedor; el filtro deja solo los pendientes de respuesta |
 | GET | `/api/vendedor/metricas?desde=&hasta=` | VENDEDOR | Por oferta: ventas completadas, calificación promedio y total de comentarios. Fechas opcionales (`yyyy-MM-dd`, inclusivas) |
 
@@ -194,10 +196,11 @@ correcciones principales:
 | 8 | El comprador nunca recibía la clave y el vendedor no podía cargarlas | Endpoints `POST /api/compras/{id}/clave` y `POST /api/ofertas/{id}/claves`; el reembolso respeta el plazo de 48 horas y la clave canjeada | `ClaveDigitalController`, `EntregarClaveDigital`, `CargarClaveDigital`, `SolicitarReembolso` |
 | 9 | Se podía comprar dos veces lo mismo y comprar ofertas eliminadas | `RegistrarCompra` rechaza ambos casos con 422 | `RegistrarCompra`, `RegistrarCompraReglasTest` |
 | 10 | Los comentarios no tenían calificación, no se podía responderlos ni medir el desempeño de una oferta | Calificación 1–5, un comentario por compra, respuesta única del vendedor, bandeja de pendientes y métricas por rango de fechas | `Comentario`, `DejarComentario`, `ResponderComentario`, `ConsultarMetricasDelVendedor`, `ComentariosIntegracionTest` |
+| 11 | El vendedor no podía corregir una oferta, no tenía galería de imágenes ni historial de ventas | `PUT /api/ofertas/{id}` (solo el dueño; las ajenas responden 404), galería de hasta 10 URLs validadas y `GET /api/vendedor/ventas` con filtros por fecha y estado | `Oferta.editar`, `Oferta.definirImagenes`, `EditarOferta`, `ConsultarVentasDelVendedor`, `GestionDeOfertasIntegracionTest` |
 
 ## Pruebas automatizadas
 
-El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **111 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
+El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **134 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
 
 ## Pruebas avanzadas
 

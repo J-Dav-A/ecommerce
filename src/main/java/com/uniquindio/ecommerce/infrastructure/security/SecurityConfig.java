@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
                         // Publicar y eliminar ofertas: solo vendedores
                         .requestMatchers(HttpMethod.POST, "/api/ofertas").hasRole("VENDEDOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/ofertas/*").hasRole("VENDEDOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/ofertas/**").hasRole("VENDEDOR")
                         // Catálogo de ofertas: lectura pública
                         .requestMatchers(HttpMethod.GET, "/api/ofertas/**").permitAll()

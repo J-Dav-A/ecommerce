@@ -34,6 +34,13 @@ public class OfertaRepositoryEnMemoria implements OfertaRepository {
     }
 
     @Override
+    public List<Oferta> obtenerTodasPorVendedorId(String vendedorId) {
+        return ofertas.values().stream()
+                .filter(o -> o.getVendedorId().equals(vendedorId))
+                .toList();
+    }
+
+    @Override
     public Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano) {
         List<Oferta> filtradas = ofertas.values().stream()
                 .filter(o -> o.getEstado() == EstadoOferta.PUBLICADA)

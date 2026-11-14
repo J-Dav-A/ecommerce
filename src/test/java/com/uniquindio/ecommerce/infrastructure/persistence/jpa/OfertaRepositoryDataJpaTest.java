@@ -15,8 +15,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // @DataJpaTest solo levanta la capa de persistencia (entidades + interfaces JPA) con una H2 embebida.
 // NO carga nuestro adaptador (OfertaRepositoryJpa) ni el mapper: por eso se traen con @Import.
@@ -30,6 +32,41 @@ class OfertaRepositoryDataJpaTest {
 
     @Autowired
     private OfertaRepository ofertaRepository;
+
+    @Test
+    void deberiaGuardarLasImagenesEnOrdenYReemplazarlasAlActualizar() {
+        // Arrange
+        Oferta oferta = Oferta.crear("dj-img", "v-1", "Con imágenes",
+                new com.uniquindio.ecommerce.domain.valueobject.Precio(new BigDecimal("10"), "USD"), 3);
+        oferta.definirImagenes(List.of("https://img.test/1.png", "https://img.test/2.png"));
+        ofertaRepository.guardar(oferta);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert: se recuperan en el mismo orden
+        Oferta recuperada = ofertaRepository.obtenerPorId("dj-img").orElseThrow();
+        assertEquals(List.of("https://img.test/1.png", "https://img.test/2.png"), recuperada.getImagenes());
+
+        // Act & Assert: al reemplazar la galería solo queda la nueva
+        recuperada.definirImagenes(List.of("https://img.test/3.png"));
+        ofertaRepository.guardar(recuperada);
+        entityManager.flush();
+        entityManager.clear();
+        assertEquals(List.of("https://img.test/3.png"), ofertaRepository.obtenerPorId("dj-img").orElseThrow().getImagenes());
+    }
+
+    @Test
+    void obtenerTodasPorVendedorIncluyeLasEliminadasPeroObtenerPorVendedorNo() {
+        // Arrange
+        entityManager.persist(crearOferta("dj-v1", "Activa", EstadoOferta.PUBLICADA));
+        entityManager.persist(crearOferta("dj-v2", "Eliminada", EstadoOferta.ELIMINADA));
+        entityManager.flush();
+        String vendedor = entityManager.find(OfertaEntity.class, "dj-v1").getVendedorId();
+
+        // Act & Assert
+        assertTrue(ofertaRepository.obtenerPorVendedorId(vendedor).stream().noneMatch(o -> o.getId().equals("dj-v2")));
+        assertTrue(ofertaRepository.obtenerTodasPorVendedorId(vendedor).stream().anyMatch(o -> o.getId().equals("dj-v2")));
+    }
 
     @Test
     void deberiaBuscarPorTextoYPaginarOrdenadoPorTitulo() {

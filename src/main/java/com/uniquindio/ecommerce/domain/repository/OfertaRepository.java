@@ -11,6 +11,8 @@ public interface OfertaRepository {
     List<Oferta> obtenerPublicadas();
     // Ofertas del vendedor que no están eliminadas
     List<Oferta> obtenerPorVendedorId(String vendedorId);
+    // Todas las ofertas del vendedor, también las eliminadas (para el historial de ventas)
+    List<Oferta> obtenerTodasPorVendedorId(String vendedorId);
     Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano);
     List<OfertaVentas> masVendidas(int limite);
     void guardar(Oferta oferta);

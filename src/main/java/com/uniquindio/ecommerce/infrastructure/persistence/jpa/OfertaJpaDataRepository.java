@@ -20,6 +20,8 @@ public interface OfertaJpaDataRepository extends JpaRepository<OfertaEntity, Str
 
     List<OfertaEntity> findByEstado(EstadoOferta estado);
 
+    List<OfertaEntity> findByVendedorId(String vendedorId);
+
     List<OfertaEntity> findByVendedorIdAndEstadoNot(String vendedorId, EstadoOferta estado);
 
     // Consulta JPQL dinámica con filtros opcionales de texto y plataforma

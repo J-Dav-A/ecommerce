@@ -1,10 +1,12 @@
 package com.uniquindio.ecommerce.infrastructure.rest;
 
+import com.uniquindio.ecommerce.application.dto.request.EditarOfertaRequest;
 import com.uniquindio.ecommerce.application.dto.request.PublicarOfertaRequest;
 import com.uniquindio.ecommerce.application.dto.response.OfertaResponse;
 import com.uniquindio.ecommerce.application.dto.response.OfertaVentaResponse;
 import com.uniquindio.ecommerce.application.dto.response.PageResponse;
 import com.uniquindio.ecommerce.application.usecase.BuscarOfertas;
+import com.uniquindio.ecommerce.application.usecase.EditarOferta;
 import com.uniquindio.ecommerce.application.usecase.EliminarOferta;
 import com.uniquindio.ecommerce.application.usecase.PublicarProductoUseCase;
 import com.uniquindio.ecommerce.domain.entity.Oferta;
@@ -30,6 +32,7 @@ public class OfertaController {
     private final BuscarOfertas buscarOfertas;
     private final PublicarProductoUseCase publicarProductoUseCase;
     private final EliminarOferta eliminarOferta;
+    private final EditarOferta editarOferta;
 
     @GetMapping
     public PageResponse<OfertaResponse> buscar(
@@ -74,6 +77,22 @@ public class OfertaController {
                 .toUri();
 
         return ResponseEntity.created(location).body(response);
+    }
+
+    // Solo el vendedor dueño; el vendedor, el id y el estado no se pueden cambiar
+    @PutMapping("/{id}")
+    public OfertaResponse editar(@PathVariable String id,
+                                 @Valid @RequestBody EditarOfertaRequest request,
+                                 @AuthenticationPrincipal UsuarioPrincipal usuario) {
+        Oferta oferta = editarOferta.ejecutar(
+                id,
+                usuario.getId(),
+                request.titulo(),
+                new Precio(request.precioValor(), request.precioMoneda()),
+                request.stock(),
+                request.plataforma(),
+                request.imagenes());
+        return OfertaResponse.desde(oferta);
     }
 
     @DeleteMapping("/{id}")

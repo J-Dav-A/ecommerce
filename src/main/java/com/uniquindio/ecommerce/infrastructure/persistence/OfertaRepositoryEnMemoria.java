@@ -1,6 +1,7 @@
 package com.uniquindio.ecommerce.infrastructure.persistence;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaVentas;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
@@ -41,11 +42,15 @@ public class OfertaRepositoryEnMemoria implements OfertaRepository {
     }
 
     @Override
-    public Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano) {
+    public Pagina<Oferta> buscar(FiltroBusqueda filtro, int pagina, int tamano) {
+        String texto = filtro.texto();
+        // La calificación mínima necesita los comentarios, que solo conoce la implementación JPA
         List<Oferta> filtradas = ofertas.values().stream()
                 .filter(o -> o.getEstado() == EstadoOferta.PUBLICADA)
                 .filter(o -> texto == null || texto.isBlank() || o.getTitulo().toLowerCase().contains(texto.toLowerCase()))
-                .filter(o -> plataforma == null || o.getPlataforma() == plataforma)
+                .filter(o -> filtro.plataforma() == null || o.getPlataforma() == filtro.plataforma())
+                .filter(o -> filtro.precioMinimo() == null || o.getPrecio().valor().compareTo(filtro.precioMinimo()) >= 0)
+                .filter(o -> filtro.precioMaximo() == null || o.getPrecio().valor().compareTo(filtro.precioMaximo()) <= 0)
                 .toList();
 
         int desde = Math.min(pagina * tamano, filtradas.size());

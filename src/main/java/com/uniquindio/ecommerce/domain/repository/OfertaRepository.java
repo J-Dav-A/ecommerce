@@ -13,7 +13,11 @@ public interface OfertaRepository {
     List<Oferta> obtenerPorVendedorId(String vendedorId);
     // Todas las ofertas del vendedor, también las eliminadas (para el historial de ventas)
     List<Oferta> obtenerTodasPorVendedorId(String vendedorId);
-    Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano);
+    Pagina<Oferta> buscar(FiltroBusqueda filtro, int pagina, int tamano);
+
+    default Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano) {
+        return buscar(new FiltroBusqueda(texto, plataforma, null, null, null), pagina, tamano);
+    }
     List<OfertaVentas> masVendidas(int limite);
     void guardar(Oferta oferta);
 }

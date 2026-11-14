@@ -10,6 +10,7 @@ import com.uniquindio.ecommerce.application.usecase.EditarOferta;
 import com.uniquindio.ecommerce.application.usecase.EliminarOferta;
 import com.uniquindio.ecommerce.application.usecase.PublicarProductoUseCase;
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
 import com.uniquindio.ecommerce.domain.valueobject.Plataforma;
 import com.uniquindio.ecommerce.domain.valueobject.Precio;
 import com.uniquindio.ecommerce.infrastructure.security.UsuarioPrincipal;
@@ -20,6 +21,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -38,10 +40,14 @@ public class OfertaController {
     public PageResponse<OfertaResponse> buscar(
             @RequestParam(name = "busqueda", required = false) String busqueda,
             @RequestParam(name = "plataforma", required = false) Plataforma plataforma,
+            @RequestParam(name = "precioMinimo", required = false) BigDecimal precioMinimo,
+            @RequestParam(name = "precioMaximo", required = false) BigDecimal precioMaximo,
+            @RequestParam(name = "calificacionMinima", required = false) Double calificacionMinima,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
         return PageResponse.desde(
-                buscarOfertas.buscar(busqueda, plataforma, page, size),
+                buscarOfertas.buscar(
+                        new FiltroBusqueda(busqueda, plataforma, precioMinimo, precioMaximo, calificacionMinima), page, size),
                 OfertaResponse::desde);
     }
 

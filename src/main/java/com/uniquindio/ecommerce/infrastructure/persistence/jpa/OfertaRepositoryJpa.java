@@ -1,6 +1,7 @@
 package com.uniquindio.ecommerce.infrastructure.persistence.jpa;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaVentas;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,8 @@ import java.util.Set;
 @Repository
 @RequiredArgsConstructor
 public class OfertaRepositoryJpa implements OfertaRepository {
+
+    private static final BigDecimal PRECIO_TOPE = new BigDecimal("999999999");
 
     private final OfertaJpaDataRepository dataRepository;
     private final OfertaPersistenceMapper mapper;
@@ -54,12 +58,18 @@ public class OfertaRepositoryJpa implements OfertaRepository {
     }
 
     @Override
-    public Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano) {
-        String patron = (texto == null) ? "" : texto.trim();
-        Set<Plataforma> plataformas = (plataforma == null) ? EnumSet.allOf(Plataforma.class) : EnumSet.of(plataforma);
+    public Pagina<Oferta> buscar(FiltroBusqueda filtro, int pagina, int tamano) {
+        String patron = (filtro.texto() == null) ? "" : filtro.texto().trim();
+        Set<Plataforma> plataformas = (filtro.plataforma() == null)
+                ? EnumSet.allOf(Plataforma.class) : EnumSet.of(filtro.plataforma());
+        // Sin filtro se usan valores que no excluyen nada (así la consulta nunca recibe parámetros nulos)
+        BigDecimal precioMinimo = (filtro.precioMinimo() == null) ? BigDecimal.ZERO : filtro.precioMinimo();
+        BigDecimal precioMaximo = (filtro.precioMaximo() == null) ? PRECIO_TOPE : filtro.precioMaximo();
+        double calificacionMinima = (filtro.calificacionMinima() == null) ? 0.0 : filtro.calificacionMinima();
 
         Page<OfertaEntity> resultado = dataRepository.buscar(
-                patron, plataformas, PageRequest.of(pagina, tamano, Sort.by("titulo")));
+                patron, plataformas, precioMinimo, precioMaximo, calificacionMinima,
+                PageRequest.of(pagina, tamano, Sort.by("titulo")));
 
         return new Pagina<>(
                 resultado.getContent().stream().map(mapper::toDomain).toList(),

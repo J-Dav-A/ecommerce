@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -28,9 +29,14 @@ public interface OfertaJpaDataRepository extends JpaRepository<OfertaEntity, Str
     @Query("SELECT o FROM OfertaEntity o WHERE " +
             "(:texto IS NULL OR :texto = '' OR LOWER(o.titulo) LIKE LOWER(CONCAT('%', :texto, '%'))) AND " +
             "(:plataformas IS NULL OR o.plataforma IN :plataformas) AND " +
+            "o.precio.monto >= :precioMinimo AND o.precio.monto <= :precioMaximo AND " +
+            "COALESCE((SELECT AVG(m.calificacion) FROM ComentarioEntity m WHERE m.ofertaId = o.id), 0.0) >= :calificacionMinima AND " +
             "o.estado = com.uniquindio.ecommerce.domain.valueobject.EstadoOferta.PUBLICADA")
     Page<OfertaEntity> buscar(@Param("texto") String texto,
                               @Param("plataformas") Set<Plataforma> plataformas,
+                              @Param("precioMinimo") BigDecimal precioMinimo,
+                              @Param("precioMaximo") BigDecimal precioMaximo,
+                              @Param("calificacionMinima") double calificacionMinima,
                               Pageable pageable);
 
     // Consulta JPQL avanzada con JOIN y GROUP BY para calcular las más vendidas

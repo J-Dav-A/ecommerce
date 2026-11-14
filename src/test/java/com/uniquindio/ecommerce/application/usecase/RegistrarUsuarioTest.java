@@ -24,19 +24,19 @@ class RegistrarUsuarioTest {
     @Test
     void deberiaGuardarElUsuarioConLaContrasenaCifrada() {
         // Act
-        Usuario usuario = registrarUsuario.ejecutar("Ana", "ana@mail.com", "clave123", "3000000000",
+        Usuario usuario = registrarUsuario.ejecutar("Ana", "ana@mail.com", "Clave123", "3000000000",
                 "COMPRADOR", LocalDate.of(2000, 1, 1));
 
         // Assert
         Usuario guardado = usuarioRepository.obtenerPorId(usuario.getId()).orElseThrow();
-        assertNotEquals("clave123", guardado.getContrasena());
-        assertTrue(passwordEncoder.matches("clave123", guardado.getContrasena()));
+        assertNotEquals("Clave123", guardado.getContrasena());
+        assertTrue(passwordEncoder.matches("Clave123", guardado.getContrasena()));
     }
 
     @Test
     void noDebeRegistrarUnEmailYaRegistrado() {
         // Arrange
-        registrarUsuario.ejecutar("Ana", "ana@mail.com", "clave123", "3000000000",
+        registrarUsuario.ejecutar("Ana", "ana@mail.com", "Clave123", "3000000000",
                 "COMPRADOR", LocalDate.of(2000, 1, 1));
 
         // Act
@@ -52,7 +52,7 @@ class RegistrarUsuarioTest {
     void noDebeRegistrarUnUsuarioSinNombre() {
         // Act & Assert
         assertThrows(ReglaDominioException.class,
-                () -> registrarUsuario.ejecutar(" ", "sin.nombre@mail.com", "clave123", "3000000000",
+                () -> registrarUsuario.ejecutar(" ", "sin.nombre@mail.com", "Clave123", "3000000000",
                         "COMPRADOR", LocalDate.of(2000, 1, 1)));
         assertTrue(!usuarioRepository.existePorEmail("sin.nombre@mail.com"));
     }

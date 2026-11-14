@@ -68,7 +68,7 @@ Reporte HTML en `build/reports/tests/test/index.html`.
 
 ## Usuarios de prueba
 
-La base se inicializa (`data.sql`) con dos usuarios. La contraseña de ambos es **`clave123`**.
+La base se inicializa (`data.sql`) con dos usuarios. La contraseña de ambos es **`clave123`** (son datos de prueba: para iniciar sesión sirve, pero una contraseña nueva debe cumplir la regla de 8 caracteres, mayúscula y número).
 
 | Email | Rol | Password |
 |---|---|---|
@@ -89,13 +89,17 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
-| POST | `/api/usuarios` | Público | Registra un nuevo usuario (contraseña se cifra con BCrypt) |
+| POST | `/api/usuarios` | Público | Registra un nuevo usuario (contraseña con BCrypt). La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número (si no, 422 con el motivo) |
+| GET | `/api/usuarios/me` | Autenticado | Perfil del usuario del token |
+| PUT | `/api/usuarios/me` | Autenticado | Edita nombre, teléfono y fecha de nacimiento (el email y el rol no cambian) |
+| PUT | `/api/usuarios/me/contrasena` | Autenticado | Cambia la contraseña: exige la actual (`contrasenaActual`, `contrasenaNueva`); responde 204 |
+| DELETE | `/api/usuarios/me` | Autenticado | Borrado lógico de la cuenta: ya no puede iniciar sesión ni usar su token. No se permite con ofertas publicadas (vendedor) ni con compras pendientes (comprador) |
 
 ### Ofertas (`/api/ofertas`)
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
-| GET | `/api/ofertas` | Público | Lista/busca ofertas (filtros: `busqueda`, `plataforma`, paginación `page`/`size`) |
+| GET | `/api/ofertas` | Público | Lista/busca ofertas (filtros: `busqueda`, `plataforma`, `precioMinimo`, `precioMaximo`, `calificacionMinima` de 1 a 5 según el promedio de comentarios; paginación `page`/`size`) |
 | GET | `/api/ofertas/mas-vendidas` | Público | Top ofertas más vendidas (parámetro `limite`) |
 | GET | `/api/ofertas/{id}` | Público | Consulta el detalle de una oferta |
 | POST | `/api/ofertas` | VENDEDOR | Publica una nueva oferta. El vendedor se toma del token (no se envía `vendedorId`) |
@@ -197,10 +201,11 @@ correcciones principales:
 | 9 | Se podía comprar dos veces lo mismo y comprar ofertas eliminadas | `RegistrarCompra` rechaza ambos casos con 422 | `RegistrarCompra`, `RegistrarCompraReglasTest` |
 | 10 | Los comentarios no tenían calificación, no se podía responderlos ni medir el desempeño de una oferta | Calificación 1–5, un comentario por compra, respuesta única del vendedor, bandeja de pendientes y métricas por rango de fechas | `Comentario`, `DejarComentario`, `ResponderComentario`, `ConsultarMetricasDelVendedor`, `ComentariosIntegracionTest` |
 | 11 | El vendedor no podía corregir una oferta, no tenía galería de imágenes ni historial de ventas | `PUT /api/ofertas/{id}` (solo el dueño; las ajenas responden 404), galería de hasta 10 URLs validadas y `GET /api/vendedor/ventas` con filtros por fecha y estado | `Oferta.editar`, `Oferta.definirImagenes`, `EditarOferta`, `ConsultarVentasDelVendedor`, `GestionDeOfertasIntegracionTest` |
+| 12 | Contraseñas débiles, sin gestión de la cuenta y catálogo sin filtros de precio ni calificación | `PoliticaContrasena` (8+, mayúscula y número), perfil (`/api/usuarios/me`), cambio de contraseña y borrado lógico (`Usuario.activo`); filtros de precio y calificación mínima en `GET /api/ofertas` | `PoliticaContrasena`, `Usuario`, `EditarPerfil`, `CambiarContrasena`, `EliminarCuenta`, `FiltroBusqueda`, `CuentaDeUsuarioIntegracionTest` |
 
 ## Pruebas automatizadas
 
-El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **134 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
+El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **159 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
 
 ## Pruebas avanzadas
 

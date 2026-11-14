@@ -1,10 +1,12 @@
 package com.uniquindio.ecommerce.infrastructure.persistence.jpa;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoOferta;
 import com.uniquindio.ecommerce.domain.valueobject.Plataforma;
+import com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity.ComentarioEntity;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity.OfertaEntity;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity.PrecioEmbeddable;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.mapper.OfertaPersistenceMapper;
@@ -98,6 +100,53 @@ class OfertaRepositoryDataJpaTest {
         // Assert: solo aparece la publicada
         assertEquals(1, pagina.totalElementos());
         assertEquals("Hades", pagina.contenido().get(0).getTitulo());
+    }
+
+    @Test
+    void deberiaFiltrarPorRangoDePrecioYCalificacionMinima() {
+        // Arrange: tres ofertas con el texto "zz-filtro" y distinto precio; solo dos tienen comentarios
+        entityManager.persist(ofertaConPrecio("zf-1", "zz-filtro barato", "10"));
+        entityManager.persist(ofertaConPrecio("zf-2", "zz-filtro medio", "30"));
+        entityManager.persist(ofertaConPrecio("zf-3", "zz-filtro caro", "60"));
+        entityManager.persist(comentario("m-1", "zf-1", "c-1", 5));
+        entityManager.persist(comentario("m-2", "zf-1", "c-2", 3)); // promedio de zf-1 = 4.0
+        entityManager.persist(comentario("m-3", "zf-2", "c-3", 2)); // promedio de zf-2 = 2.0
+        entityManager.flush();
+
+        // Act & Assert: rango de precio
+        assertEquals(2, ofertaRepository.buscar(
+                new FiltroBusqueda("zz-filtro", null, new BigDecimal("20"), null, null), 0, 10).totalElementos());
+        assertEquals(2, ofertaRepository.buscar(
+                new FiltroBusqueda("zz-filtro", null, null, new BigDecimal("30"), null), 0, 10).totalElementos());
+
+        // Act & Assert: calificación mínima 4 -> solo zf-1 (la oferta sin comentarios cuenta como 0)
+        Pagina<Oferta> altas = ofertaRepository.buscar(new FiltroBusqueda("zz-filtro", null, null, null, 4.0), 0, 10);
+        assertEquals(1, altas.totalElementos());
+        assertEquals("zf-1", altas.contenido().get(0).getId());
+
+        // Act & Assert: calificación mínima 2 + precio mínimo 20 -> solo zf-2
+        Pagina<Oferta> combinada = ofertaRepository.buscar(
+                new FiltroBusqueda("zz-filtro", null, new BigDecimal("20"), null, 2.0), 0, 10);
+        assertEquals(1, combinada.totalElementos());
+        assertEquals("zf-2", combinada.contenido().get(0).getId());
+    }
+
+    private OfertaEntity ofertaConPrecio(String id, String titulo, String monto) {
+        OfertaEntity oferta = crearOferta(id, titulo, EstadoOferta.PUBLICADA);
+        oferta.setPrecio(new PrecioEmbeddable(new BigDecimal(monto), "USD"));
+        return oferta;
+    }
+
+    private ComentarioEntity comentario(String id, String ofertaId, String compraId, int calificacion) {
+        ComentarioEntity c = new ComentarioEntity();
+        c.setId(id);
+        c.setCompradorId("u-2");
+        c.setOfertaId(ofertaId);
+        c.setCompraId(compraId);
+        c.setTexto("Comentario");
+        c.setCalificacion(calificacion);
+        c.setFecha(java.time.LocalDateTime.now());
+        return c;
     }
 
     private OfertaEntity crearOferta(String id, String titulo, EstadoOferta estado) {

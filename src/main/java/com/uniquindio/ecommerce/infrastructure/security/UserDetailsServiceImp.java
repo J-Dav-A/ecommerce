@@ -22,6 +22,7 @@ public class UserDetailsServiceImp implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UsuarioEntity usuario = usuarioRepository.findByEmail(email)
+                .filter(UsuarioEntity::isActivo)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
         return new UsuarioPrincipal(

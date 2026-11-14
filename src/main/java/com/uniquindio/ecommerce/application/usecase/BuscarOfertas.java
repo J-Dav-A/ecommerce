@@ -3,6 +3,7 @@ package com.uniquindio.ecommerce.application.usecase;
 import com.uniquindio.ecommerce.domain.entity.Oferta;
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
 import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
+import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaVentas;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
@@ -24,13 +25,29 @@ public class BuscarOfertas {
 
     @Transactional(readOnly = true)
     public Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano) {
+        return buscar(new FiltroBusqueda(texto, plataforma, null, null, null), pagina, tamano);
+    }
+
+    @Transactional(readOnly = true)
+    public Pagina<Oferta> buscar(FiltroBusqueda filtro, int pagina, int tamano) {
+        if (filtro.precioMinimo() != null && filtro.precioMinimo().signum() < 0) {
+            throw new ReglaDominioException("El precio mínimo no puede ser negativo");
+        }
+        if (filtro.precioMaximo() != null && filtro.precioMinimo() != null
+                && filtro.precioMaximo().compareTo(filtro.precioMinimo()) < 0) {
+            throw new ReglaDominioException("El precio máximo no puede ser menor al mínimo");
+        }
+        if (filtro.calificacionMinima() != null
+                && (filtro.calificacionMinima() < 1 || filtro.calificacionMinima() > 5)) {
+            throw new ReglaDominioException("La calificación mínima debe estar entre 1 y 5");
+        }
         if (pagina < 0) {
             throw new ReglaDominioException("La página no puede ser negativa");
         }
         if (tamano < 1 || tamano > TAMANO_MAXIMO) {
             throw new ReglaDominioException("El tamaño de página debe estar entre 1 y " + TAMANO_MAXIMO);
         }
-        return ofertaRepository.buscar(texto, plataforma, pagina, tamano);
+        return ofertaRepository.buscar(filtro, pagina, tamano);
     }
 
     @Transactional(readOnly = true)

@@ -61,6 +61,16 @@ public class Compra {
         return this.compradorId.equals(compradorId);
     }
 
+    public boolean estaActiva() {
+        return this.estado != EstadoCompra.REEMBOLSADA;
+    }
+
+    public void verificarQuePuedeRecibirLaClave() {
+        if (this.estado != EstadoCompra.COMPLETADA) {
+            throw new ReglaDominioException("La compra debe estar completada para recibir la clave");
+        }
+    }
+
     private void verificarQueNoEsteReembolsada() {
         if (this.estado.esFinal()) {
             throw new ReglaDominioException("Una compra reembolsada no puede modificarse");

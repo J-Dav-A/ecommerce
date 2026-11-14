@@ -98,16 +98,25 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 | GET | `/api/ofertas` | Público | Lista/busca ofertas (filtros: `busqueda`, `plataforma`, paginación `page`/`size`) |
 | GET | `/api/ofertas/mas-vendidas` | Público | Top ofertas más vendidas (parámetro `limite`) |
 | GET | `/api/ofertas/{id}` | Público | Consulta el detalle de una oferta |
-| POST | `/api/ofertas` | VENDEDOR | Publica una nueva oferta |
-| DELETE | `/api/ofertas/{id}` | VENDEDOR | Elimina una oferta |
+| POST | `/api/ofertas` | VENDEDOR | Publica una nueva oferta. El vendedor se toma del token (no se envía `vendedorId`) |
+| DELETE | `/api/ofertas/{id}` | VENDEDOR | Elimina (lógicamente) una oferta propia, solo si no tiene compras de las últimas 48 horas sujetas a reembolso |
+| POST | `/api/ofertas/{id}/claves` | VENDEDOR | El dueño de la oferta le carga una clave digital (`codigo`, `maxActivaciones`, `transferible`) |
+
+### Vendedor (`/api/vendedor`)
+
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/vendedor/ofertas` | VENDEDOR | Lista las ofertas del vendedor del token (sin las eliminadas) |
 
 ### Compras (`/api/compras`)
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
 | POST | `/api/compras` | COMPRADOR | Registra una compra sobre una oferta. El comprador se toma del token, no del cuerpo (solo se envía `ofertaId`) |
-| PUT | `/api/compras/{id}/confirmar` | Autenticado | Confirma una compra (entrega la clave digital) |
-| POST | `/api/compras/{id}/reembolso` | COMPRADOR | Solicita reembolso de una compra propia (si la compra es de otro comprador responde 404) |
+| GET | `/api/compras/{id}` | Autenticado | Detalle de una compra propia |
+| PUT | `/api/compras/{id}/confirmar` | COMPRADOR | Confirma una compra propia (pasa a COMPLETADA) |
+| POST | `/api/compras/{id}/clave` | COMPRADOR | Entrega la clave digital de una compra completada; la clave queda canjeada |
+| POST | `/api/compras/{id}/reembolso` | COMPRADOR | Solicita reembolso de una compra propia, dentro de 48 horas y con la clave sin canjear (si la compra es de otro comprador responde 404) |
 | GET | `/api/compras` | Autenticado | Historial de compras del usuario del token |
 
 ### Comentarios (`/api/comentarios`)
@@ -116,6 +125,12 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 |---|---|---|---|
 | POST | `/api/comentarios` | Autenticado | Deja un comentario sobre una oferta comprada (el autor se toma del token) |
 | GET | `/api/comentarios?ofertaId=` | Autenticado | Lista comentarios de una oferta |
+
+### Reglas de negocio de la compra
+
+- Un comprador no puede comprar dos veces la misma oferta mientras la compra siga activa (si la reembolsa, puede volver a comprarla).
+- Solo se venden ofertas publicadas y con una clave digital disponible; el vendedor carga las claves con `POST /api/ofertas/{id}/claves`.
+- El reembolso solo procede dentro de 48 horas y mientras la clave no se haya canjeado (recibir la clave con `POST /api/compras/{id}/clave` la canjea). Al reembolsar, la clave queda invalidada.
 
 ### Códigos de error
 
@@ -166,10 +181,14 @@ correcciones principales:
 | 3 | "No encontrado" se manejaba distinto en ofertas y compras (400 con mensaje en un caso, 404 genérico en el otro) | Nueva `RecursoNoEncontradoException`: todos los casos de uso responden 404 con un mensaje claro | `RecursoNoEncontradoException`, casos de uso, `GlobalExceptionHandler` |
 | 4 | Pruebas de casos de uso cortas frente a los diez casos de uso | Pruebas nuevas para los diez casos de uso, incluidos los que fallan por regla de negocio | `src/test/.../application/usecase` |
 | 5 | La clave y la duración del JWT estaban escritas en el código | Pasaron a `application.properties` (la clave puede sobrescribirse con `JWT_SECRET`) | `application.properties`, `JwtUtils` |
+| 6 | El vendedor se tomaba del cuerpo al publicar y cualquier vendedor podía eliminar ofertas ajenas | El vendedor sale del token; solo el dueño elimina (o carga claves) y no se puede eliminar con compras recientes sujetas a reembolso | `OfertaController`, `EliminarOferta`, `FlujoDeClavesIntegracionTest` |
+| 7 | `PUT /confirmar` lo podía usar cualquier usuario | Solo el comprador dueño de la compra puede confirmarla | `ConfirmarCompraUseCase` |
+| 8 | El comprador nunca recibía la clave y el vendedor no podía cargarlas | Endpoints `POST /api/compras/{id}/clave` y `POST /api/ofertas/{id}/claves`; el reembolso respeta el plazo de 48 horas y la clave canjeada | `ClaveDigitalController`, `EntregarClaveDigital`, `CargarClaveDigital`, `SolicitarReembolso` |
+| 9 | Se podía comprar dos veces lo mismo y comprar ofertas eliminadas | `RegistrarCompra` rechaza ambos casos con 422 | `RegistrarCompra`, `RegistrarCompraReglasTest` |
 
 ## Pruebas automatizadas
 
-El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **63 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
+El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **90 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
 
 ## Pruebas avanzadas
 

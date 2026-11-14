@@ -49,6 +49,15 @@ public class ClaveDigital {
         this.estado = EstadoClaveDigital.ASIGNADA;
     }
 
+    // Entregar la clave al comprador equivale a canjearla; si ya estaba canjeada se vuelve a mostrar sin cambios.
+    public void entregar() {
+        if (estado == EstadoClaveDigital.ASIGNADA) {
+            canjear();
+        } else if (estado != EstadoClaveDigital.CANJEADA) {
+            throw new ReglaDominioException("La clave no está asignada a ningún comprador");
+        }
+    }
+
     public void canjear() {
         if (estado != EstadoClaveDigital.ASIGNADA) throw new ReglaDominioException("Solo una clave asignada puede canjearse");
         this.estado = EstadoClaveDigital.CANJEADA;

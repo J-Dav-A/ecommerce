@@ -48,8 +48,9 @@ public class CompraController {
     }
 
     @PutMapping("/{id}/confirmar")
-    public ResponseEntity<Void> confirmar(@PathVariable String id) {
-        confirmarCompraUseCase.ejecutar(id);
+    public ResponseEntity<Void> confirmar(@PathVariable String id,
+                                          @AuthenticationPrincipal UsuarioPrincipal usuario) {
+        confirmarCompraUseCase.ejecutar(id, usuario.getId());
         return ResponseEntity.ok().build();
     }
 

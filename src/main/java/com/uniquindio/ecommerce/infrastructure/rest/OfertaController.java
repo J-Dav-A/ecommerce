@@ -10,9 +10,11 @@ import com.uniquindio.ecommerce.application.usecase.PublicarProductoUseCase;
 import com.uniquindio.ecommerce.domain.entity.Oferta;
 import com.uniquindio.ecommerce.domain.valueobject.Plataforma;
 import com.uniquindio.ecommerce.domain.valueobject.Precio;
+import com.uniquindio.ecommerce.infrastructure.security.UsuarioPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -53,10 +55,11 @@ public class OfertaController {
     }
 
     @PostMapping
-    public ResponseEntity<OfertaResponse> publicar(@Valid @RequestBody PublicarOfertaRequest request) {
+    public ResponseEntity<OfertaResponse> publicar(@Valid @RequestBody PublicarOfertaRequest request,
+                                                   @AuthenticationPrincipal UsuarioPrincipal usuario) {
         Oferta oferta = publicarProductoUseCase.ejecutar(
                 UUID.randomUUID().toString(),
-                request.vendedorId(),
+                usuario.getId(),
                 request.titulo(),
                 new Precio(request.precioValor(), request.precioMoneda()),
                 request.stock(),
@@ -74,8 +77,9 @@ public class OfertaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable String id) {
-        eliminarOferta.ejecutar(id);
+    public ResponseEntity<Void> eliminar(@PathVariable String id,
+                                         @AuthenticationPrincipal UsuarioPrincipal usuario) {
+        eliminarOferta.ejecutar(id, usuario.getId());
         return ResponseEntity.ok().build();
     }
 }

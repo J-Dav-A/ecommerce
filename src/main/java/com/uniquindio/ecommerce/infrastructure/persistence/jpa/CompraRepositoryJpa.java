@@ -7,6 +7,7 @@ import com.uniquindio.ecommerce.infrastructure.persistence.jpa.mapper.CompraPers
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,5 +38,10 @@ public class CompraRepositoryJpa implements CompraRepository {
         return dataRepository.findByCompradorIdOrderByFechaCompraDesc(compradorId).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public boolean existenComprasRecientes(String ofertaId, LocalDateTime desde) {
+        return dataRepository.existsByOfertaIdAndEstadoNotAndFechaCompraAfter(ofertaId, EstadoCompra.REEMBOLSADA, desde);
     }
 }

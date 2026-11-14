@@ -5,10 +5,8 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
+// El vendedor no viene en el cuerpo: se toma del token JWT del usuario autenticado.
 public record PublicarOfertaRequest(
-        @NotBlank(message = "El vendedor es obligatorio")
-        String vendedorId,
-
         @NotBlank(message = "El título es obligatorio")
         String titulo,
 

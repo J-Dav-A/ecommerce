@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,9 @@ import java.util.Optional;
 public interface ClaveDigitalJpaDataRepository extends JpaRepository<ClaveDigitalEntity, String> {
 
     Optional<ClaveDigitalEntity> findFirstByOfertaIdAndEstado(String ofertaId, EstadoClaveDigital estado);
+
+    Optional<ClaveDigitalEntity> findFirstByOfertaIdAndCompradorIdAndEstadoIn(String ofertaId, String compradorId,
+                                                                              Collection<EstadoClaveDigital> estados);
 
     @Query("SELECT c FROM ClaveDigitalEntity c WHERE c.ofertaId = :ofertaId AND c.estado = :estado")
     List<ClaveDigitalEntity> buscarClavesPorOfertaYEstado(@Param("ofertaId") String ofertaId,

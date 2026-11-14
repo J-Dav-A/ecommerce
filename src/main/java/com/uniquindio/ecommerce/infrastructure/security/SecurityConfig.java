@@ -1,6 +1,11 @@
 package com.uniquindio.ecommerce.infrastructure.security;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.Customizer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -33,9 +38,22 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    // CORS: permite que el frontend Angular (ng serve, puerto 4200) llame a la API desde el navegador
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuracion = new CorsConfiguration();
+        configuracion.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuracion.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuracion.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        UrlBasedCorsConfigurationSource fuente = new UrlBasedCorsConfigurationSource();
+        fuente.registerCorsConfiguration("/**", configuracion);
+        return fuente;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -60,8 +78,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/ofertas/**").hasRole("VENDEDOR")
                         // Catálogo de ofertas: lectura pública
                         .requestMatchers(HttpMethod.GET, "/api/ofertas/**").permitAll()
-                        // Comprar y solicitar reembolso: solo compradores
+                        // Cargar claves a una oferta y ver "mis ofertas": solo vendedores
+                        .requestMatchers(HttpMethod.POST, "/api/ofertas/*/claves").hasRole("VENDEDOR")
+                        .requestMatchers("/api/vendedor/**").hasRole("VENDEDOR")
+                        // Comprar, confirmar, recibir la clave y pedir reembolso: solo compradores
                         .requestMatchers(HttpMethod.POST, "/api/compras").hasRole("COMPRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/compras/*/confirmar").hasRole("COMPRADOR")
+                        .requestMatchers(HttpMethod.POST, "/api/compras/*/clave").hasRole("COMPRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/compras/*/reembolso").hasRole("COMPRADOR")
                         .anyRequest().authenticated()
                 )

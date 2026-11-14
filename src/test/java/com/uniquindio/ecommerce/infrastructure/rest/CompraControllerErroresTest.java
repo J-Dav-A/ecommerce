@@ -9,7 +9,13 @@ import com.uniquindio.ecommerce.domain.valueobject.EstadoCompra;
 import com.uniquindio.ecommerce.domain.valueobject.Precio;
 import com.uniquindio.ecommerce.infrastructure.rest.mapper.CompraMapper;
 import com.uniquindio.ecommerce.infrastructure.security.JwtAuthenticationFilter;
+import com.uniquindio.ecommerce.infrastructure.security.UsuarioPrincipal;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -23,6 +29,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -60,6 +67,20 @@ class CompraControllerErroresTest {
 
     @MockitoBean
     private SolicitarReembolso solicitarReembolso;
+
+    // El controller toma el comprador del usuario autenticado: se simula que juan (u-2) inició sesión.
+    @BeforeEach
+    void iniciarSesion() {
+        UsuarioPrincipal juan = new UsuarioPrincipal("u-2", "juan@gmail.com", "x",
+                List.of(new SimpleGrantedAuthority("ROLE_COMPRADOR")));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(juan, null, juan.getAuthorities()));
+    }
+
+    @AfterEach
+    void cerrarSesion() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     void deberiaResponder404YNoGuardarCuandoLaCompraNoExiste() throws Exception {

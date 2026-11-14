@@ -26,6 +26,8 @@ public class RegistrarCompra {
     @Transactional
     public Compra ejecutar(String ofertaId, String compradorId) {
         Oferta oferta = ofertaRepository.obtenerPorId(ofertaId).orElseThrow(() -> new RecursoNoEncontradoException("La oferta no existe"));
+        oferta.verificarDisponibleParaVenta();
+        verificarQueNoLaTengaYaComprada(ofertaId, compradorId);
         ClaveDigital clave = claveDigitalRepository.obtenerDisponiblePorOferta(ofertaId).orElseThrow(() -> new ReglaDominioException("No hay claves digitales disponibles para esta oferta"));
 
         Compra compra = Compra.realizar(UUID.randomUUID().toString(), ofertaId, compradorId, oferta.getPrecio());
@@ -37,5 +39,13 @@ public class RegistrarCompra {
         claveDigitalRepository.guardar(clave);
 
         return compra;
+    }
+
+    private void verificarQueNoLaTengaYaComprada(String ofertaId, String compradorId) {
+        boolean yaComprada = compraRepository.obtenerPorCompradorId(compradorId).stream()
+                .anyMatch(c -> c.getOfertaId().equals(ofertaId) && c.estaActiva());
+        if (yaComprada) {
+            throw new ReglaDominioException("Ya compraste esta oferta");
+        }
     }
 }

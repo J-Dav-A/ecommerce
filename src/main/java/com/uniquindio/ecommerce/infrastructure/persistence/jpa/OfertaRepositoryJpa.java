@@ -40,6 +40,13 @@ public class OfertaRepositoryJpa implements OfertaRepository {
     }
 
     @Override
+    public List<Oferta> obtenerPorVendedorId(String vendedorId) {
+        return dataRepository.findByVendedorIdAndEstadoNot(vendedorId, EstadoOferta.ELIMINADA).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano) {
         String patron = (texto == null) ? "" : texto.trim();
         Set<Plataforma> plataformas = (plataforma == null) ? EnumSet.allOf(Plataforma.class) : EnumSet.of(plataforma);

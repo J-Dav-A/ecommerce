@@ -59,6 +59,16 @@ public class Oferta {
         this.stock -= cantidad;
     }
 
+    public boolean perteneceA(String vendedorId) {
+        return this.vendedorId.equals(vendedorId);
+    }
+
+    public void verificarDisponibleParaVenta() {
+        if (estado != EstadoOferta.PUBLICADA) {
+            throw new ReglaDominioException("La oferta no está disponible para la venta");
+        }
+    }
+
     public void eliminar() {
         if (estado == EstadoOferta.ELIMINADA) throw new ReglaDominioException("La oferta ya se encuentra eliminada");
         this.estado = EstadoOferta.ELIMINADA;

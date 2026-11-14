@@ -4,6 +4,7 @@ import com.uniquindio.ecommerce.domain.entity.Compra;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoCompra;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,5 +35,13 @@ public class CompraRepositoryEnMemoria implements CompraRepository {
         return compras.values().stream()
                 .filter(c -> c.getCompradorId().equals(compradorId))
                 .toList();
+    }
+
+    @Override
+    public boolean existenComprasRecientes(String ofertaId, LocalDateTime desde) {
+        return compras.values().stream()
+                .anyMatch(c -> c.getOfertaId().equals(ofertaId)
+                        && c.estaActiva()
+                        && c.getFechaCompra().isAfter(desde));
     }
 }

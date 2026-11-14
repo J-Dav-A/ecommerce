@@ -14,8 +14,11 @@ public class ConfirmarCompraUseCase {
     private final CompraRepository repository;
 
     @Transactional
-    public void ejecutar(String compraId) {
-        Compra compra = repository.obtenerPorId(compraId).orElseThrow(() -> new RecursoNoEncontradoException("La compra no existe"));
+    public void ejecutar(String compraId, String compradorId) {
+        // Una compra ajena se trata como inexistente
+        Compra compra = repository.obtenerPorId(compraId)
+                .filter(c -> c.perteneceA(compradorId))
+                .orElseThrow(() -> new RecursoNoEncontradoException("La compra no existe"));
         compra.confirmar();
         repository.guardar(compra);
     }

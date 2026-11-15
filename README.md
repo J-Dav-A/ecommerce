@@ -66,6 +66,20 @@ La clave de firma y la duración del token están en `application.properties` (`
 
 Reporte HTML en `build/reports/tests/test/index.html`.
 
+### Ejecutar con MariaDB (opcional)
+
+Por defecto la aplicación usa H2 en memoria (los datos se pierden al reiniciar). Para persistir los datos hay un perfil `mariadb`:
+
+```powershell
+docker compose up -d
+.\gradlew bootRun --args='--spring.profiles.active=mariadb'
+```
+
+- `docker-compose.yml` levanta MariaDB 11 con la base `ecommerce` (usuario y clave `ecommerce`).
+- Los datos de conexión se pueden cambiar con las variables de entorno `DB_URL`, `DB_USER` y `DB_PASSWORD`.
+- El perfil usa `ddl-auto=update` (las tablas se crean una vez y los datos se conservan) y carga los datos de prueba con `data-mariadb.sql` (`INSERT IGNORE`, así reiniciar no duplica nada).
+- Las pruebas automatizadas siguen usando H2.
+
 ## Usuarios de prueba
 
 La base se inicializa (`data.sql`) con dos usuarios. La contraseña de ambos es **`clave123`** (son datos de prueba: para iniciar sesión sirve, pero una contraseña nueva debe cumplir la regla de 8 caracteres, mayúscula y número).
@@ -112,6 +126,14 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
 | GET | `/api/vendedor/ofertas` | VENDEDOR | Lista las ofertas del vendedor del token (sin las eliminadas) |
+
+### Favoritos (`/api/favoritos`)
+
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| GET | `/api/favoritos` | COMPRADOR | Ofertas favoritas del comprador del token, la guardada más recientemente primero (las ofertas eliminadas dejan de aparecer) |
+| POST | `/api/favoritos/{ofertaId}` | COMPRADOR | Guarda una oferta publicada como favorita (404 si no existe o no está publicada; 422 si ya estaba) |
+| DELETE | `/api/favoritos/{ofertaId}` | COMPRADOR | Quita una oferta de los favoritos (404 si no estaba) |
 
 ### Compras (`/api/compras`)
 
@@ -202,10 +224,11 @@ correcciones principales:
 | 10 | Los comentarios no tenían calificación, no se podía responderlos ni medir el desempeño de una oferta | Calificación 1–5, un comentario por compra, respuesta única del vendedor, bandeja de pendientes y métricas por rango de fechas | `Comentario`, `DejarComentario`, `ResponderComentario`, `ConsultarMetricasDelVendedor`, `ComentariosIntegracionTest` |
 | 11 | El vendedor no podía corregir una oferta, no tenía galería de imágenes ni historial de ventas | `PUT /api/ofertas/{id}` (solo el dueño; las ajenas responden 404), galería de hasta 10 URLs validadas y `GET /api/vendedor/ventas` con filtros por fecha y estado | `Oferta.editar`, `Oferta.definirImagenes`, `EditarOferta`, `ConsultarVentasDelVendedor`, `GestionDeOfertasIntegracionTest` |
 | 12 | Contraseñas débiles, sin gestión de la cuenta y catálogo sin filtros de precio ni calificación | `PoliticaContrasena` (8+, mayúscula y número), perfil (`/api/usuarios/me`), cambio de contraseña y borrado lógico (`Usuario.activo`); filtros de precio y calificación mínima en `GET /api/ofertas` | `PoliticaContrasena`, `Usuario`, `EditarPerfil`, `CambiarContrasena`, `EliminarCuenta`, `FiltroBusqueda`, `CuentaDeUsuarioIntegracionTest` |
+| 13 | No había forma de guardar ofertas para después y los datos se perdían al reiniciar (solo H2) | Favoritos del comprador (con restricción única por comprador y oferta) y perfil `mariadb` con `docker-compose.yml` | `Favorito`, `AgregarFavorito`, `ListarFavoritos`, `FavoritoController`, `application-mariadb.properties`, `FavoritosIntegracionTest` |
 
 ## Pruebas automatizadas
 
-El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **159 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
+El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **172 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
 
 ## Pruebas avanzadas
 

@@ -86,6 +86,8 @@ public class SecurityConfig {
                         // Cargar claves a una oferta y ver "mis ofertas": solo vendedores
                         .requestMatchers(HttpMethod.POST, "/api/ofertas/*/claves").hasRole("VENDEDOR")
                         .requestMatchers("/api/vendedor/**").hasRole("VENDEDOR")
+                        // Favoritos: solo compradores
+                        .requestMatchers("/api/favoritos/**").hasRole("COMPRADOR")
                         // Comprar, confirmar, recibir la clave y pedir reembolso: solo compradores
                         .requestMatchers(HttpMethod.POST, "/api/compras").hasRole("COMPRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/compras/*/confirmar").hasRole("COMPRADOR")

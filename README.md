@@ -98,6 +98,8 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 | Método | Endpoint | Descripción |
 |---|---|---|
 | POST | `/api/auth/login` | Autentica con email/contraseña y devuelve un token JWT |
+| POST | `/api/auth/recuperar` | Pide recuperar la contraseña: envía un código de 6 dígitos al correo (vale 15 minutos). Responde siempre `202` con el mismo mensaje, exista o no el correo |
+| POST | `/api/auth/restablecer` | Cambia la contraseña con `email`, `codigo` y `contrasenaNueva` (debe cumplir la política). El código es de un solo uso y se bloquea tras 5 intentos fallidos. Cualquier fallo responde `422 "El código no es válido o expiró"` |
 
 ### Usuarios (`/api/usuarios`)
 
@@ -105,7 +107,7 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 |---|---|---|---|
 | POST | `/api/usuarios` | Público | Registra un nuevo usuario (contraseña con BCrypt). La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número (si no, 422 con el motivo) |
 | GET | `/api/usuarios/me` | Autenticado | Perfil del usuario del token |
-| PUT | `/api/usuarios/me` | Autenticado | Edita nombre, teléfono y fecha de nacimiento (el email y el rol no cambian) |
+| PUT | `/api/usuarios/me` | Autenticado | Edita nombre, teléfono, fecha de nacimiento y `fotoPerfil` (URL); el vendedor además `descripcion` y `datosPago` (un comprador que los envía recibe 422). El email y el rol no cambian |
 | PUT | `/api/usuarios/me/contrasena` | Autenticado | Cambia la contraseña: exige la actual (`contrasenaActual`, `contrasenaNueva`); responde 204 |
 | DELETE | `/api/usuarios/me` | Autenticado | Borrado lógico de la cuenta: ya no puede iniciar sesión ni usar su token. No se permite con ofertas publicadas (vendedor) ni con compras pendientes (comprador) |
 
@@ -113,9 +115,9 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 
 | Método | Endpoint | Acceso | Descripción |
 |---|---|---|---|
-| GET | `/api/ofertas` | Público | Lista/busca ofertas (filtros: `busqueda`, `plataforma`, `precioMinimo`, `precioMaximo`, `calificacionMinima` de 1 a 5 según el promedio de comentarios; paginación `page`/`size`) |
+| GET | `/api/ofertas` | Público | Lista/busca ofertas (filtros: `busqueda`, `plataforma`, `precioMinimo`, `precioMaximo`, `calificacionMinima` de 1 a 5 según el promedio de comentarios, `orden` = `NOMBRE` (por defecto), `PRECIO_ASC`, `PRECIO_DESC`, `POPULARIDAD` o `CALIFICACION`; paginación `page`/`size`). Cada oferta trae `imagenPrincipal` (la primera de la galería), `promedioCalificacion` y `totalComentarios` |
 | GET | `/api/ofertas/mas-vendidas` | Público | Top ofertas más vendidas (parámetro `limite`) |
-| GET | `/api/ofertas/{id}` | Público | Consulta el detalle de una oferta |
+| GET | `/api/ofertas/{id}` | Público | Detalle de una oferta publicada, con su promedio de calificación (una oferta eliminada o sin publicar responde 404) |
 | POST | `/api/ofertas` | VENDEDOR | Publica una nueva oferta. El vendedor se toma del token (no se envía `vendedorId`) |
 | PUT | `/api/ofertas/{id}` | VENDEDOR | Edita una oferta propia (título, precio, stock, plataforma) y opcionalmente su galería `imagenes` (hasta 10 URLs http/https; si no se envía, la galería no cambia; si se envía, la reemplaza). Una oferta publicada no puede quedarse sin stock ni editarse si está eliminada |
 | DELETE | `/api/ofertas/{id}` | VENDEDOR | Elimina (lógicamente) una oferta propia, solo si no tiene compras de las últimas 48 horas sujetas a reembolso |
@@ -143,8 +145,8 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 | GET | `/api/compras/{id}` | Autenticado | Detalle de una compra propia |
 | PUT | `/api/compras/{id}/confirmar` | COMPRADOR | Confirma una compra propia (pasa a COMPLETADA) |
 | POST | `/api/compras/{id}/clave` | COMPRADOR | Entrega la clave digital de una compra completada; la clave queda canjeada |
-| POST | `/api/compras/{id}/reembolso` | COMPRADOR | Solicita reembolso de una compra propia, dentro de 48 horas y con la clave sin canjear (si la compra es de otro comprador responde 404) |
-| GET | `/api/compras` | Autenticado | Historial de compras del usuario del token |
+| POST o PUT | `/api/compras/{id}/reembolso` | COMPRADOR | Solicita reembolso de una compra propia, dentro de 48 horas y con la clave sin canjear (si la compra es de otro comprador responde 404) |
+| GET | `/api/compras?desde=&hasta=&estado=` | Autenticado | Historial de compras del usuario del token, el más reciente primero. Filtros opcionales: fechas `yyyy-MM-dd` (inclusivo) y estado |
 
 ### Comentarios (`/api/comentarios`)
 
@@ -162,6 +164,34 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 | GET | `/api/vendedor/comentarios?sinResponder=true` | VENDEDOR | Comentarios de las ofertas del vendedor; el filtro deja solo los pendientes de respuesta |
 | GET | `/api/vendedor/metricas?desde=&hasta=` | VENDEDOR | Por oferta: ventas completadas, calificación promedio y total de comentarios. Fechas opcionales (`yyyy-MM-dd`, inclusivas) |
 
+### Notificaciones (`/api/notificaciones`) — cualquier usuario autenticado
+
+Cada usuario solo ve las suyas (la de otro usuario responde 404).
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/api/notificaciones?soloNoLeidas=` | Lista las notificaciones del usuario del token, la más reciente primero |
+| GET | `/api/notificaciones/no-leidas/cantidad` | Cantidad de no leídas (para el globo del encabezado) |
+| PUT | `/api/notificaciones/{id}/leida` | Marca una como leída (204) |
+| PUT | `/api/notificaciones/leidas` | Marca todas como leídas; devuelve `{ "marcadas": n }` |
+
+Se generan solas: al **vendedor** le avisan una venta nueva (`VENTA_REALIZADA`), una solicitud de reembolso (`REEMBOLSO_SOLICITADO`, también por correo) y un comentario nuevo (`COMENTARIO_NUEVO`, también por correo); al **comprador** le avisan la confirmación de su compra (`COMPRA_CONFIRMADA`, también por correo). Un fallo del correo nunca deshace la operación.
+
+### Subida de imágenes (`/api/archivos`) — autenticado
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/api/archivos/firma?carpeta=ofertas\|perfiles` | Devuelve la firma para subir una imagen directo a Cloudinary desde el cliente (el secreto de la API nunca sale del servidor). El cliente guarda después la URL resultante en la oferta o el perfil. Responde 503 si Cloudinary no está configurado |
+
+### Correo y Cloudinary (variables de entorno)
+
+| Variable | Para qué sirve | Por defecto |
+|---|---|---|
+| `CORREO_HABILITADO` | `true` envía los correos por SMTP; `false` solo los escribe en el log | `false` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USUARIO`, `SMTP_CLAVE` | Servidor SMTP (por ejemplo Gmail con una contraseña de aplicación) | `smtp.gmail.com`, `587` |
+| `CORREO_REMITENTE` | Dirección que aparece como remitente | `no-reply@ecommerce.local` |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Credenciales de Cloudinary para la firma de subida | vacías |
+
 ### Reglas de negocio de la compra
 
 - Un comprador no puede comprar dos veces la misma oferta mientras la compra siga activa (si la reembolsa, puede volver a comprarla).
@@ -177,6 +207,7 @@ También hay 2 ofertas (`o-101` Zelda: Tears of the Kingdom, `o-102` God of War 
 | 403 | Token válido pero con el rol equivocado |
 | 404 | El recurso no existe (oferta, compra, clave...), con el mismo formato en todos los casos |
 | 422 | La petición es válida pero rompe una regla de negocio (`ReglaDominioException`) |
+| 503 | Un servicio externo no está configurado (por ejemplo, la firma de Cloudinary sin credenciales) |
 
 > Nota: las rutas marcadas "Autenticado" exigen un JWT válido (cualquier rol); las de VENDEDOR/COMPRADOR exigen además ese rol específico.
 
@@ -225,10 +256,12 @@ correcciones principales:
 | 11 | El vendedor no podía corregir una oferta, no tenía galería de imágenes ni historial de ventas | `PUT /api/ofertas/{id}` (solo el dueño; las ajenas responden 404), galería de hasta 10 URLs validadas y `GET /api/vendedor/ventas` con filtros por fecha y estado | `Oferta.editar`, `Oferta.definirImagenes`, `EditarOferta`, `ConsultarVentasDelVendedor`, `GestionDeOfertasIntegracionTest` |
 | 12 | Contraseñas débiles, sin gestión de la cuenta y catálogo sin filtros de precio ni calificación | `PoliticaContrasena` (8+, mayúscula y número), perfil (`/api/usuarios/me`), cambio de contraseña y borrado lógico (`Usuario.activo`); filtros de precio y calificación mínima en `GET /api/ofertas` | `PoliticaContrasena`, `Usuario`, `EditarPerfil`, `CambiarContrasena`, `EliminarCuenta`, `FiltroBusqueda`, `CuentaDeUsuarioIntegracionTest` |
 | 13 | No había forma de guardar ofertas para después y los datos se perdían al reiniciar (solo H2) | Favoritos del comprador (con restricción única por comprador y oferta) y perfil `mariadb` con `docker-compose.yml` | `Favorito`, `AgregarFavorito`, `ListarFavoritos`, `FavoritoController`, `application-mariadb.properties`, `FavoritosIntegracionTest` |
+| 14 | Revisión contra el documento del proyecto final: las tarjetas no traían el promedio de calificación, el detalle mostraba ofertas eliminadas, el historial del comprador no tenía filtros, el perfil no tenía foto ni datos del vendedor y no se podía ordenar por popularidad | `OfertaResponse` con `imagenPrincipal` y promedio; el detalle solo muestra ofertas publicadas; filtros del historial; foto, descripción y datos de pago; parámetro `orden`; reembolso también por `PUT` (como en el mapeo de la profesora) | `ConsultarCalificaciones`, `BuscarOfertas`, `ConsultarHistorialDeCompras`, `Usuario.definirPerfilExtendido`, `OrdenOfertas`, `CatalogoYPerfilIntegracionTest` |
+| 15 | Faltaban las notificaciones, los correos, la recuperación de contraseña y la subida de imágenes que pide el documento del proyecto final | Notificaciones dentro de la app y por correo mediante el puerto `Notificador`; recuperación por código de 6 dígitos (15 min, un solo uso, 5 intentos); firma de subida a Cloudinary | `Notificador`, `NotificadorPersistente`, `NotificacionController`, `SolicitarRecuperacionContrasena`, `RestablecerContrasena`, `GenerarFirmaDeSubida`, `NotificacionesIntegracionTest`, `RecuperacionDeContrasenaIntegracionTest` |
 
 ## Pruebas automatizadas
 
-El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **172 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
+El proyecto cuenta con pruebas unitarias (dominio y casos de uso), de integración con `@DataJpaTest` (repositorios) y de capa web con `@WebMvcTest` (controllers). Total actual: **223 pruebas**, todas en verde (incluye pruebas de los diez casos de uso, con casos que fallan por reglas de negocio).
 
 ## Pruebas avanzadas
 

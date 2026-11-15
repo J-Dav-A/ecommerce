@@ -16,6 +16,11 @@ public class UsuarioRepositoryEnMemoria implements UsuarioRepository {
     }
 
     @Override
+    public Optional<Usuario> obtenerPorEmail(String email) {
+        return usuarios.values().stream().filter(u -> u.getEmail().equalsIgnoreCase(email)).findFirst();
+    }
+
+    @Override
     public boolean existePorEmail(String email) {
         return usuarios.values().stream()
                 .anyMatch(u -> u.getEmail().equalsIgnoreCase(email));

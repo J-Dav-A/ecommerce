@@ -5,6 +5,8 @@ import com.uniquindio.ecommerce.domain.entity.Compra;
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
 import com.uniquindio.ecommerce.domain.repository.ComentarioRepository;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
+import com.uniquindio.ecommerce.domain.service.Notificador;
+import org.springframework.beans.factory.annotation.Autowired;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,14 @@ public class DejarComentario {
 
     private final ComentarioRepository comentarioRepository;
     private final CompraRepository compraRepository;
+
+    // Se inyecta en la aplicación; en las pruebas unitarias queda en "no avisar a nadie"
+    private Notificador notificador = Notificador.NINGUNO;
+
+    @Autowired(required = false)
+    public void setNotificador(Notificador notificador) {
+        this.notificador = notificador;
+    }
 
     @Transactional
     public Comentario ejecutar(String compradorId, String ofertaId, String texto, int calificacion) {
@@ -36,6 +46,7 @@ public class DejarComentario {
         Comentario comentario = Comentario.crear(UUID.randomUUID().toString(), compradorId, ofertaId,
                 compra.getId(), texto, calificacion, LocalDateTime.now());
         comentarioRepository.guardar(comentario);
+        notificador.comentarioRecibido(comentario);
         return comentario;
     }
 }

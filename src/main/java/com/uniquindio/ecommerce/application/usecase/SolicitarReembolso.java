@@ -5,6 +5,8 @@ import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.ecommerce.domain.repository.ClaveDigitalRepository;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
 import com.uniquindio.ecommerce.domain.valueobject.PoliticaReembolso;
+import com.uniquindio.ecommerce.domain.service.Notificador;
+import org.springframework.beans.factory.annotation.Autowired;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,14 @@ public class SolicitarReembolso {
 
     private final CompraRepository repository;
     private final ClaveDigitalRepository claveDigitalRepository;
+
+    // Se inyecta en la aplicación; en las pruebas unitarias queda en "no avisar a nadie"
+    private Notificador notificador = Notificador.NINGUNO;
+
+    @Autowired(required = false)
+    public void setNotificador(Notificador notificador) {
+        this.notificador = notificador;
+    }
 
     @Transactional
     public void ejecutar(String compraId, String compradorId, String motivo) {
@@ -34,5 +44,6 @@ public class SolicitarReembolso {
         });
 
         repository.guardar(compra);
+        notificador.reembolsoSolicitado(compra, motivo);
     }
 }

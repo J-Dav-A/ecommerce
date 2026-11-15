@@ -40,6 +40,6 @@ public class AuthController {
         UsuarioEntity usuario = usuarioRepository.buscarPorEmail(dto.email()).orElseThrow();
         String token = jwtUtils.generarToken(usuario.getEmail(), usuario.getRol());
 
-        return ResponseEntity.ok(new TokenDTO(token, usuario.getEmail()));
+        return ResponseEntity.ok(new TokenDTO(token, usuario.getEmail(), usuario.getRol(), usuario.getId(), usuario.getNombre()));
     }
 }

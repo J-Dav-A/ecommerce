@@ -34,6 +34,7 @@ public class CompraRepositoryEnMemoria implements CompraRepository {
     public List<Compra> obtenerPorCompradorId(String compradorId) {
         return compras.values().stream()
                 .filter(c -> c.getCompradorId().equals(compradorId))
+                .sorted(Comparator.comparing(Compra::getFechaCompra).reversed()) // igual que el repositorio JPA
                 .toList();
     }
 

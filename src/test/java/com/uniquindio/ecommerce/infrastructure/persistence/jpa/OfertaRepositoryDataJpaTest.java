@@ -5,6 +5,7 @@ import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoOferta;
+import com.uniquindio.ecommerce.domain.valueobject.OrdenOfertas;
 import com.uniquindio.ecommerce.domain.valueobject.Plataforma;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity.ComentarioEntity;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity.OfertaEntity;
@@ -129,6 +130,29 @@ class OfertaRepositoryDataJpaTest {
                 new FiltroBusqueda("zz-filtro", null, new BigDecimal("20"), null, 2.0), 0, 10);
         assertEquals(1, combinada.totalElementos());
         assertEquals("zf-2", combinada.contenido().get(0).getId());
+    }
+
+    @Test
+    void deberiaOrdenarPorPrecioYPorCalificacion() {
+        // Arrange: nombre alfabético zo-1 < zo-2 < zo-3; precios 30, 10, 20; calificaciones 1, sin comentarios, 5
+        entityManager.persist(ofertaConPrecio("zo-1", "zz-orden A", "30"));
+        entityManager.persist(ofertaConPrecio("zo-2", "zz-orden B", "10"));
+        entityManager.persist(ofertaConPrecio("zo-3", "zz-orden C", "20"));
+        entityManager.persist(comentario("mo-1", "zo-1", "co-1", 1));
+        entityManager.persist(comentario("mo-2", "zo-3", "co-2", 5));
+        entityManager.flush();
+
+        // Act & Assert
+        assertEquals(List.of("zo-1", "zo-2", "zo-3"), ids(OrdenOfertas.NOMBRE));
+        assertEquals(List.of("zo-2", "zo-3", "zo-1"), ids(OrdenOfertas.PRECIO_ASC));
+        assertEquals(List.of("zo-1", "zo-3", "zo-2"), ids(OrdenOfertas.PRECIO_DESC));
+        assertEquals(List.of("zo-3", "zo-1", "zo-2"), ids(OrdenOfertas.CALIFICACION));
+    }
+
+    private List<String> ids(OrdenOfertas orden) {
+        Pagina<Oferta> pagina = ofertaRepository.buscar(
+                new FiltroBusqueda("zz-orden", null, null, null, null, orden), 0, 10);
+        return pagina.contenido().stream().map(Oferta::getId).toList();
     }
 
     private OfertaEntity ofertaConPrecio(String id, String titulo, String monto) {

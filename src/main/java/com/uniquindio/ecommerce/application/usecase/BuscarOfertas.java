@@ -7,6 +7,7 @@ import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaVentas;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
+import com.uniquindio.ecommerce.domain.valueobject.EstadoOferta;
 import com.uniquindio.ecommerce.domain.valueobject.Plataforma;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,9 @@ public class BuscarOfertas {
 
     @Transactional(readOnly = true)
     public Oferta obtener(String id) {
-        return ofertaRepository.obtenerPorId(id).orElseThrow(() -> new RecursoNoEncontradoException("La oferta no existe"));
+        // Una oferta eliminada o sin publicar no se muestra en el catálogo: se trata como inexistente
+        return ofertaRepository.obtenerPorId(id)
+                .filter(o -> o.getEstado() == EstadoOferta.PUBLICADA)
+                .orElseThrow(() -> new RecursoNoEncontradoException("La oferta no existe"));
     }
 }

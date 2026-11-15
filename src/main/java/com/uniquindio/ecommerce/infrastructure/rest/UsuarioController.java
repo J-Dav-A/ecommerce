@@ -41,7 +41,8 @@ public class UsuarioController {
     public UsuarioResponse editarPerfil(@Valid @RequestBody EditarPerfilRequest request,
                                         @AuthenticationPrincipal UsuarioPrincipal usuario) {
         return UsuarioResponse.desde(editarPerfil.ejecutar(
-                usuario.getId(), request.nombre(), request.telefono(), request.fechaNacimiento()));
+                usuario.getId(), request.nombre(), request.telefono(), request.fechaNacimiento(),
+                request.fotoPerfil(), request.descripcion(), request.datosPago()));
     }
 
     @PutMapping("/me/contrasena")

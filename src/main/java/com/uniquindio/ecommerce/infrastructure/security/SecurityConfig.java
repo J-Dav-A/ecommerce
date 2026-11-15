@@ -93,6 +93,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/compras/*/confirmar").hasRole("COMPRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/compras/*/clave").hasRole("COMPRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/compras/*/reembolso").hasRole("COMPRADOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/compras/*/reembolso").hasRole("COMPRADOR")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

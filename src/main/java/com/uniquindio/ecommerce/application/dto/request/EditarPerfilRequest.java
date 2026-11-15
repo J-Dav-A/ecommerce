@@ -14,5 +14,16 @@ public record EditarPerfilRequest(
         @Size(max = 20, message = "El teléfono no puede superar 20 caracteres")
         String telefono,
 
-        LocalDate fechaNacimiento
+        LocalDate fechaNacimiento,
+
+        @Size(max = 500, message = "La foto de perfil no puede superar 500 caracteres")
+        String fotoPerfil,
+
+        // Solo vendedores
+        @Size(max = 1000, message = "La descripción no puede superar 1000 caracteres")
+        String descripcion,
+
+        // Solo vendedores
+        @Size(max = 500, message = "Los datos de pago no pueden superar 500 caracteres")
+        String datosPago
 ) {}

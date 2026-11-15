@@ -67,9 +67,18 @@ public class OfertaRepositoryJpa implements OfertaRepository {
         BigDecimal precioMaximo = (filtro.precioMaximo() == null) ? PRECIO_TOPE : filtro.precioMaximo();
         double calificacionMinima = (filtro.calificacionMinima() == null) ? 0.0 : filtro.calificacionMinima();
 
-        Page<OfertaEntity> resultado = dataRepository.buscar(
-                patron, plataformas, precioMinimo, precioMaximo, calificacionMinima,
-                PageRequest.of(pagina, tamano, Sort.by("titulo")));
+        Page<OfertaEntity> resultado = switch (filtro.orden()) {
+            case POPULARIDAD -> dataRepository.buscarPorPopularidad(patron, plataformas, precioMinimo, precioMaximo,
+                    calificacionMinima, PageRequest.of(pagina, tamano));
+            case CALIFICACION -> dataRepository.buscarPorCalificacion(patron, plataformas, precioMinimo, precioMaximo,
+                    calificacionMinima, PageRequest.of(pagina, tamano));
+            case PRECIO_ASC -> dataRepository.buscar(patron, plataformas, precioMinimo, precioMaximo, calificacionMinima,
+                    PageRequest.of(pagina, tamano, Sort.by("precio.monto").ascending().and(Sort.by("titulo"))));
+            case PRECIO_DESC -> dataRepository.buscar(patron, plataformas, precioMinimo, precioMaximo, calificacionMinima,
+                    PageRequest.of(pagina, tamano, Sort.by("precio.monto").descending().and(Sort.by("titulo"))));
+            case NOMBRE -> dataRepository.buscar(patron, plataformas, precioMinimo, precioMaximo, calificacionMinima,
+                    PageRequest.of(pagina, tamano, Sort.by("titulo")));
+        };
 
         return new Pagina<>(
                 resultado.getContent().stream().map(mapper::toDomain).toList(),

@@ -1,6 +1,7 @@
 package com.uniquindio.ecommerce.infrastructure.rest;
 
 import com.uniquindio.ecommerce.application.usecase.BuscarOfertas;
+import com.uniquindio.ecommerce.application.usecase.ConsultarCalificaciones;
 import com.uniquindio.ecommerce.application.usecase.EditarOferta;
 import com.uniquindio.ecommerce.application.usecase.EliminarOferta;
 import com.uniquindio.ecommerce.application.usecase.PublicarProductoUseCase;
@@ -46,6 +47,9 @@ class OfertaControllerTest {
 
     @MockitoBean
     private EditarOferta editarOferta;
+
+    @MockitoBean
+    private ConsultarCalificaciones consultarCalificaciones;
 
     @Test
     void alConsultarUnaOfertaExistenteDevuelve200ConSusDatos() throws Exception {

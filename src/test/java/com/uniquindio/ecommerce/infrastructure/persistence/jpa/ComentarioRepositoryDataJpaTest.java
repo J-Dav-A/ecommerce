@@ -2,6 +2,7 @@ package com.uniquindio.ecommerce.infrastructure.persistence.jpa;
 
 import com.uniquindio.ecommerce.domain.entity.Comentario;
 import com.uniquindio.ecommerce.domain.repository.ComentarioRepository;
+import com.uniquindio.ecommerce.domain.repository.ResumenPorOferta;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.mapper.ComentarioPersistenceMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,5 +77,25 @@ class ComentarioRepositoryDataJpaTest {
         // Act & Assert
         assertTrue(comentarioRepository.existePorCompraId("c-1"));
         assertFalse(comentarioRepository.existePorCompraId("c-2"));
+    }
+
+    @Test
+    void deberiaCalcularPromedioYTotalPorOfertaYOmitirLasQueNoTienenComentarios() {
+        // Arrange
+        comentarioRepository.guardar(Comentario.crear("m-1", "u-1", "o-101", "c-1", "A", 5, LocalDateTime.now()));
+        comentarioRepository.guardar(Comentario.crear("m-2", "u-2", "o-101", "c-2", "B", 2, LocalDateTime.now()));
+        comentarioRepository.guardar(Comentario.crear("m-3", "u-3", "o-102", "c-3", "C", 4, LocalDateTime.now()));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        List<ResumenPorOferta> resumenes = comentarioRepository.resumenPorOfertas(List.of("o-101", "o-102", "o-sin"));
+
+        // Assert
+        assertEquals(2, resumenes.size());
+        ResumenPorOferta o101 = resumenes.stream().filter(r -> r.ofertaId().equals("o-101")).findFirst().orElseThrow();
+        assertEquals(3.5, o101.promedio());
+        assertEquals(2L, o101.total());
+        assertTrue(comentarioRepository.resumenPorOfertas(List.of()).isEmpty());
     }
 }

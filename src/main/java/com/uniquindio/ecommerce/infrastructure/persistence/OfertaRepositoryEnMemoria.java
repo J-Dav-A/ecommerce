@@ -6,6 +6,7 @@ import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaVentas;
 import com.uniquindio.ecommerce.domain.repository.Pagina;
 import com.uniquindio.ecommerce.domain.valueobject.EstadoOferta;
+import com.uniquindio.ecommerce.domain.valueobject.OrdenOfertas;
 import com.uniquindio.ecommerce.domain.valueobject.Plataforma;
 
 import java.util.*;
@@ -51,6 +52,7 @@ public class OfertaRepositoryEnMemoria implements OfertaRepository {
                 .filter(o -> filtro.plataforma() == null || o.getPlataforma() == filtro.plataforma())
                 .filter(o -> filtro.precioMinimo() == null || o.getPrecio().valor().compareTo(filtro.precioMinimo()) >= 0)
                 .filter(o -> filtro.precioMaximo() == null || o.getPrecio().valor().compareTo(filtro.precioMaximo()) <= 0)
+                .sorted(comparadorPara(filtro.orden()))
                 .toList();
 
         int desde = Math.min(pagina * tamano, filtradas.size());
@@ -59,6 +61,16 @@ public class OfertaRepositoryEnMemoria implements OfertaRepository {
         int totalPaginas = (int) Math.ceil((double) filtradas.size() / tamano);
 
         return new Pagina<>(contenido, filtradas.size(), totalPaginas, pagina, tamano);
+    }
+
+    // Popularidad y calificación necesitan compras y comentarios: solo la implementación JPA las conoce
+    private Comparator<Oferta> comparadorPara(OrdenOfertas orden) {
+        Comparator<Oferta> porNombre = Comparator.comparing(Oferta::getTitulo);
+        return switch (orden) {
+            case PRECIO_ASC -> Comparator.comparing((Oferta o) -> o.getPrecio().valor()).thenComparing(porNombre);
+            case PRECIO_DESC -> Comparator.comparing((Oferta o) -> o.getPrecio().valor()).reversed().thenComparing(porNombre);
+            default -> porNombre;
+        };
     }
 
     @Override

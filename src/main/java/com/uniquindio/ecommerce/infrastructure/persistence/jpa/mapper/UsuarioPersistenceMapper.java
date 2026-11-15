@@ -17,6 +17,9 @@ public class UsuarioPersistenceMapper {
         entity.setRol(usuario.getRol());
         entity.setFechaNacimiento(usuario.getFechaNacimiento());
         entity.setActivo(usuario.estaActivo());
+        entity.setFotoPerfil(usuario.getFotoPerfil());
+        entity.setDescripcion(usuario.getDescripcion());
+        entity.setDatosPago(usuario.getDatosPago());
         return entity;
     }
 
@@ -30,6 +33,6 @@ public class UsuarioPersistenceMapper {
                 entity.getRol(),
                 entity.getFechaNacimiento(),
                 entity.isActivo()
-        );
+        ).conPerfilExtendido(entity.getFotoPerfil(), entity.getDescripcion(), entity.getDatosPago());
     }
 }

@@ -14,6 +14,9 @@ public class Usuario {
     private final String rol;
     private LocalDate fechaNacimiento;
     private boolean activo;
+    private String fotoPerfil;
+    private String descripcion;
+    private String datosPago;
 
     private Usuario(String id, String nombre, String email, String contrasena, String telefono, String rol,
                     LocalDate fechaNacimiento, boolean activo) {
@@ -51,6 +54,40 @@ public class Usuario {
         this.fechaNacimiento = fechaNacimiento;
     }
 
+    // Foto (URL http/https) para cualquier rol; descripción y datos de pago solo para vendedores
+    public void definirPerfilExtendido(String fotoPerfil, String descripcion, String datosPago) {
+        if (fotoPerfil != null && !fotoPerfil.isBlank()
+                && (fotoPerfil.length() > 500 || !(fotoPerfil.startsWith("http://") || fotoPerfil.startsWith("https://")))) {
+            throw new ReglaDominioException("La foto de perfil debe ser una URL http o https de hasta 500 caracteres");
+        }
+        boolean traeDatosDeVendedor = (descripcion != null && !descripcion.isBlank())
+                || (datosPago != null && !datosPago.isBlank());
+        if (traeDatosDeVendedor && !"VENDEDOR".equals(rol)) {
+            throw new ReglaDominioException("Solo los vendedores pueden registrar descripción y datos de pago");
+        }
+        if (descripcion != null && descripcion.length() > 1000) {
+            throw new ReglaDominioException("La descripción no puede superar 1000 caracteres");
+        }
+        if (datosPago != null && datosPago.length() > 500) {
+            throw new ReglaDominioException("Los datos de pago no pueden superar 500 caracteres");
+        }
+        this.fotoPerfil = blankANull(fotoPerfil);
+        this.descripcion = blankANull(descripcion);
+        this.datosPago = blankANull(datosPago);
+    }
+
+    // Se usa al reconstruir desde la base de datos
+    public Usuario conPerfilExtendido(String fotoPerfil, String descripcion, String datosPago) {
+        this.fotoPerfil = fotoPerfil;
+        this.descripcion = descripcion;
+        this.datosPago = datosPago;
+        return this;
+    }
+
+    private static String blankANull(String valor) {
+        return (valor == null || valor.isBlank()) ? null : valor;
+    }
+
     // Recibe la contraseña ya cifrada
     public void cambiarContrasena(String contrasenaCifrada) {
         if (contrasenaCifrada == null || contrasenaCifrada.isBlank()) {
@@ -79,6 +116,9 @@ public class Usuario {
     public String getRol() { return rol; }
     public LocalDate getFechaNacimiento() { return fechaNacimiento; }
     public boolean estaActivo() { return activo; }
+    public String getFotoPerfil() { return fotoPerfil; }
+    public String getDescripcion() { return descripcion; }
+    public String getDatosPago() { return datosPago; }
 
     @Override
     public boolean equals(Object o) {

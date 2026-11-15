@@ -33,6 +33,15 @@ public class UsuarioEntity {
     @jakarta.persistence.Column(nullable = false)
     private boolean activo = true;
 
+    @jakarta.persistence.Column(name = "foto_perfil", length = 500)
+    private String fotoPerfil;
+
+    @jakarta.persistence.Column(length = 1000)
+    private String descripcion;
+
+    @jakarta.persistence.Column(name = "datos_pago", length = 500)
+    private String datosPago;
+
     public String getPassword() {
         return contrasena;
     }

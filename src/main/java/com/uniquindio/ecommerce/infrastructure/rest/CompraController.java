@@ -54,7 +54,8 @@ public class CompraController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}/reembolso")
+    // POST y PUT: la profesora documenta PUT /compras/{id}/reembolso; se conserva POST por compatibilidad
+    @RequestMapping(value = "/{id}/reembolso", method = {RequestMethod.POST, RequestMethod.PUT})
     public ResponseEntity<Void> solicitarReembolso(@PathVariable String id,
                                                    @Valid @RequestBody SolicitarReembolsoRequest request,
                                                    @AuthenticationPrincipal UsuarioPrincipal usuario) {

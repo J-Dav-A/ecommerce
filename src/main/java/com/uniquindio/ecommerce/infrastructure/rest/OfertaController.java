@@ -6,11 +6,15 @@ import com.uniquindio.ecommerce.application.dto.response.OfertaResponse;
 import com.uniquindio.ecommerce.application.dto.response.OfertaVentaResponse;
 import com.uniquindio.ecommerce.application.dto.response.PageResponse;
 import com.uniquindio.ecommerce.application.usecase.BuscarOfertas;
+import com.uniquindio.ecommerce.application.usecase.ConsultarCalificaciones;
 import com.uniquindio.ecommerce.application.usecase.EditarOferta;
 import com.uniquindio.ecommerce.application.usecase.EliminarOferta;
 import com.uniquindio.ecommerce.application.usecase.PublicarProductoUseCase;
 import com.uniquindio.ecommerce.domain.entity.Oferta;
 import com.uniquindio.ecommerce.domain.repository.FiltroBusqueda;
+import com.uniquindio.ecommerce.domain.repository.Pagina;
+import com.uniquindio.ecommerce.domain.repository.ResumenPorOferta;
+import com.uniquindio.ecommerce.domain.valueobject.OrdenOfertas;
 import com.uniquindio.ecommerce.domain.valueobject.Plataforma;
 import com.uniquindio.ecommerce.domain.valueobject.Precio;
 import com.uniquindio.ecommerce.infrastructure.security.UsuarioPrincipal;
@@ -24,6 +28,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -35,6 +40,7 @@ public class OfertaController {
     private final PublicarProductoUseCase publicarProductoUseCase;
     private final EliminarOferta eliminarOferta;
     private final EditarOferta editarOferta;
+    private final ConsultarCalificaciones consultarCalificaciones;
 
     @GetMapping
     public PageResponse<OfertaResponse> buscar(
@@ -43,12 +49,14 @@ public class OfertaController {
             @RequestParam(name = "precioMinimo", required = false) BigDecimal precioMinimo,
             @RequestParam(name = "precioMaximo", required = false) BigDecimal precioMaximo,
             @RequestParam(name = "calificacionMinima", required = false) Double calificacionMinima,
+            @RequestParam(name = "orden", required = false) OrdenOfertas orden,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
-        return PageResponse.desde(
-                buscarOfertas.buscar(
-                        new FiltroBusqueda(busqueda, plataforma, precioMinimo, precioMaximo, calificacionMinima), page, size),
-                OfertaResponse::desde);
+        Pagina<Oferta> pagina = buscarOfertas.buscar(
+                new FiltroBusqueda(busqueda, plataforma, precioMinimo, precioMaximo, calificacionMinima, orden), page, size);
+        Map<String, ResumenPorOferta> calificaciones = consultarCalificaciones.ejecutar(
+                pagina.contenido().stream().map(Oferta::getId).toList());
+        return PageResponse.desde(pagina, o -> OfertaResponse.desde(o, calificaciones.get(o.getId())));
     }
 
     @GetMapping("/mas-vendidas")
@@ -60,7 +68,8 @@ public class OfertaController {
 
     @GetMapping("/{id}")
     public OfertaResponse obtener(@PathVariable String id) {
-        return OfertaResponse.desde(buscarOfertas.obtener(id));
+        Oferta oferta = buscarOfertas.obtener(id);
+        return OfertaResponse.desde(oferta, consultarCalificaciones.ejecutar(List.of(id)).get(id));
     }
 
     @PostMapping

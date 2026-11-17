@@ -1,3 +1,4 @@
+
 package com.uniquindio.ecommerce.infrastructure.rest;
 
 import com.uniquindio.ecommerce.infrastructure.rest.dto.LoginDTO;
@@ -12,9 +13,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-// El registro de usuarios vive en un solo lugar: UsuarioController (POST /api/usuarios),
-// que pasa por el caso de uso de dominio RegistrarUsuario (el cual ya cifra la contraseña
-// con BCrypt antes de guardar). Este controlador solo expone login + emisión de JWT.
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -23,9 +21,11 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UsuarioJpaDataRepository usuarioRepository;
 
-    public AuthController(AuthenticationManager authenticationManager,
-                          JwtUtils jwtUtils,
-                          UsuarioJpaDataRepository usuarioRepository) {
+    public AuthController(
+            AuthenticationManager authenticationManager,
+            JwtUtils jwtUtils,
+            UsuarioJpaDataRepository usuarioRepository
+    ) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.usuarioRepository = usuarioRepository;
@@ -33,13 +33,31 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<TokenDTO> login(@Valid @RequestBody LoginDTO dto) {
+
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.email(), dto.password())
+                new UsernamePasswordAuthenticationToken(
+                        dto.email(),
+                        dto.password()
+                )
         );
 
-        UsuarioEntity usuario = usuarioRepository.buscarPorEmail(dto.email()).orElseThrow();
-        String token = jwtUtils.generarToken(usuario.getEmail(), usuario.getRol());
+        UsuarioEntity usuario = usuarioRepository
+                .buscarPorEmail(dto.email())
+                .orElseThrow();
 
-        return ResponseEntity.ok(new TokenDTO(token, usuario.getEmail()));
+        String token = jwtUtils.generarToken(
+                usuario.getEmail(),
+                usuario.getRol()
+        );
+
+        TokenDTO respuesta = new TokenDTO(
+                token,
+                usuario.getEmail(),
+                usuario.getRol(),
+                usuario.getId(),
+                usuario.getNombre()
+        );
+
+        return ResponseEntity.ok(respuesta);
     }
 }

@@ -113,6 +113,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/compras")
                         .hasRole("COMPRADOR")
 
+                        // Gestionar favoritos: solo compradores
+                        .requestMatchers("/api/favoritos", "/api/favoritos/**")
+                        .hasRole("COMPRADOR")
+
                         .requestMatchers(HttpMethod.POST, "/api/compras/*/reembolso")
                         .hasRole("COMPRADOR")
 

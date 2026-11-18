@@ -9,7 +9,15 @@ import java.util.Optional;
 public interface OfertaRepository {
     Optional<Oferta> obtenerPorId(String id);
     List<Oferta> obtenerPublicadas();
-    Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano);
+    // Ofertas del vendedor que no están eliminadas
+    List<Oferta> obtenerPorVendedorId(String vendedorId);
+    // Todas las ofertas del vendedor, también las eliminadas (para el historial de ventas)
+    List<Oferta> obtenerTodasPorVendedorId(String vendedorId);
+    Pagina<Oferta> buscar(FiltroBusqueda filtro, int pagina, int tamano);
+
+    default Pagina<Oferta> buscar(String texto, Plataforma plataforma, int pagina, int tamano) {
+        return buscar(new FiltroBusqueda(texto, plataforma, null, null, null), pagina, tamano);
+    }
     List<OfertaVentas> masVendidas(int limite);
     void guardar(Oferta oferta);
 }

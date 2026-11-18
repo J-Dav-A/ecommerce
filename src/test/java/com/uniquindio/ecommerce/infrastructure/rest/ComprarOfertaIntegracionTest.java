@@ -18,6 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// El comprador (u-2) sale del token de juan@gmail.com, no del cuerpo de la petición.
 // Prueba de integración: NO hay ningún @MockitoBean. La petición pasa por la seguridad real (JWT),
 // el controller, el caso de uso RegistrarCompra, los repositorios JPA y la base H2 con el data.sql.
 // @Transactional deshace lo guardado al terminar cada prueba.
@@ -44,7 +45,7 @@ class ComprarOfertaIntegracionTest {
         String token = jwtUtils.generarToken("juan@gmail.com", "COMPRADOR");
         int stockAntes = ofertaRepository.obtenerPorId("o-101").orElseThrow().getStock();
         String cuerpo = """
-                { "ofertaId": "o-101", "compradorId": "u-2" }
+                { "ofertaId": "o-101" }
                 """;
 
         // Act
@@ -62,11 +63,11 @@ class ComprarOfertaIntegracionTest {
     }
 
     @Test
-    void noDeberiaGuardarNingunaCompraSiLaOfertaNoExiste() throws Exception {
+    void deberiaResponder404YNoGuardarNingunaCompraSiLaOfertaNoExiste() throws Exception {
         // Arrange
         String token = jwtUtils.generarToken("juan@gmail.com", "COMPRADOR");
         String cuerpo = """
-                { "ofertaId": "no-existe", "compradorId": "u-2" }
+                { "ofertaId": "no-existe" }
                 """;
 
         // Act
@@ -76,7 +77,7 @@ class ComprarOfertaIntegracionTest {
                 .content(cuerpo));
 
         // Assert
-        respuesta.andExpect(status().isBadRequest());
+        respuesta.andExpect(status().isNotFound());
         assertTrue(compraRepository.obtenerPorCompradorId("u-2").isEmpty());
     }
 }

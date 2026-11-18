@@ -3,7 +3,6 @@ package com.uniquindio.ecommerce.infrastructure.security;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.UsuarioJpaDataRepository;
 import com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity.UsuarioEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,9 +22,11 @@ public class UserDetailsServiceImp implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UsuarioEntity usuario = usuarioRepository.findByEmail(email)
+                .filter(UsuarioEntity::isActivo)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
-        return new User(
+        return new UsuarioPrincipal(
+                usuario.getId(),
                 usuario.getEmail(),
                 usuario.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + usuario.getRol()))

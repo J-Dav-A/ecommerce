@@ -7,6 +7,7 @@ import com.uniquindio.ecommerce.infrastructure.persistence.jpa.mapper.ClaveDigit
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,6 +25,13 @@ public class ClaveDigitalRepositoryJpa implements ClaveDigitalRepository {
     @Override
     public Optional<ClaveDigital> obtenerDisponiblePorOferta(String ofertaId) {
         return dataRepository.findFirstByOfertaIdAndEstado(ofertaId, EstadoClaveDigital.DISPONIBLE)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<ClaveDigital> obtenerDeComprador(String ofertaId, String compradorId) {
+        return dataRepository.findFirstByOfertaIdAndCompradorIdAndEstadoIn(
+                        ofertaId, compradorId, List.of(EstadoClaveDigital.ASIGNADA, EstadoClaveDigital.CANJEADA))
                 .map(mapper::toDomain);
     }
 

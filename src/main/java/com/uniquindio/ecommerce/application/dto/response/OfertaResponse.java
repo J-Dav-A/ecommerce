@@ -1,7 +1,11 @@
 package com.uniquindio.ecommerce.application.dto.response;
 
 import com.uniquindio.ecommerce.domain.entity.Oferta;
+import com.uniquindio.ecommerce.domain.repository.ResumenPorOferta;
 
+import java.util.List;
+
+// La primera imagen de la galería es la principal; promedioCalificacion es null si aún no hay comentarios
 public record OfertaResponse(
         String id,
         String vendedorId,
@@ -10,9 +14,20 @@ public record OfertaResponse(
         String precioMoneda,
         int stock,
         String plataforma,
-        String estado
+        String estado,
+        List<String> imagenes,
+        String imagenPrincipal,
+        Double promedioCalificacion,
+        long totalComentarios
 ) {
     public static OfertaResponse desde(Oferta oferta) {
+        return desde(oferta, null);
+    }
+
+    public static OfertaResponse desde(Oferta oferta, ResumenPorOferta resumen) {
+        List<String> imagenes = oferta.getImagenes();
+        Double promedio = (resumen == null || resumen.promedio() == null) ? null
+                : Math.round(resumen.promedio() * 100.0) / 100.0;
         return new OfertaResponse(
                 oferta.getId(),
                 oferta.getVendedorId(),
@@ -21,7 +36,11 @@ public record OfertaResponse(
                 oferta.getPrecio().moneda(),
                 oferta.getStock(),
                 oferta.getPlataforma() == null ? null : oferta.getPlataforma().name(),
-                oferta.getEstado().name()
+                oferta.getEstado().name(),
+                imagenes,
+                imagenes.isEmpty() ? null : imagenes.get(0),
+                promedio,
+                resumen == null || resumen.total() == null ? 0 : resumen.total()
         );
     }
 }

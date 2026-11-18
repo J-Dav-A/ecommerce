@@ -3,6 +3,7 @@ package com.uniquindio.ecommerce.application.usecase;
 import com.uniquindio.ecommerce.domain.entity.Usuario;
 import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
 import com.uniquindio.ecommerce.domain.repository.UsuarioRepository;
+import com.uniquindio.ecommerce.domain.valueobject.PoliticaContrasena;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class RegistrarUsuario {
         if (usuarioRepository.existePorEmail(email)) {
             throw new ReglaDominioException("El email ya se encuentra registrado");
         }
+        PoliticaContrasena.validar(contrasena);
         String contrasenaCifrada = passwordEncoder.encode(contrasena);
         Usuario usuario = Usuario.crear(UUID.randomUUID().toString(), nombre, email, contrasenaCifrada, telefono, rol, fechaNacimiento);
         usuarioRepository.guardar(usuario);

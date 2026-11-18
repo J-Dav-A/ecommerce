@@ -1,7 +1,7 @@
 
 package com.uniquindio.ecommerce.application.usecase;
 
-import com.uniquindio.ecommerce.domain.exception.ReglaDominioException;
+import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.ecommerce.domain.repository.ClaveDigitalRepository;
 import com.uniquindio.ecommerce.domain.repository.CompraRepository;
 import com.uniquindio.ecommerce.domain.repository.OfertaRepository;
@@ -34,8 +34,8 @@ class RegistrarCompraOfertaInexistenteTest {
         );
 
         // Act
-        ReglaDominioException excepcion = assertThrows(
-                ReglaDominioException.class,
+        RecursoNoEncontradoException excepcion = assertThrows(
+                RecursoNoEncontradoException.class,
                 () -> registrarCompra.ejecutar(ofertaIdInexistente, compradorId)
         );
 

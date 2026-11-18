@@ -21,6 +21,11 @@ public class UsuarioRepositoryJpa implements UsuarioRepository {
     }
 
     @Override
+    public Optional<Usuario> obtenerPorEmail(String email) {
+        return dataRepository.findByEmail(email).map(mapper::toDomain);
+    }
+
+    @Override
     public boolean existePorEmail(String email) {
         return dataRepository.existsByEmail(email);
     }

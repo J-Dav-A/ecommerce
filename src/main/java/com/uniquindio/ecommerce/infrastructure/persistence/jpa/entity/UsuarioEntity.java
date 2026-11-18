@@ -3,6 +3,7 @@ package com.uniquindio.ecommerce.infrastructure.persistence.jpa.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.ColumnDefault;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,20 @@ public class UsuarioEntity {
     private String telefono;
     private LocalDate fechaNacimiento;
     private String rol;
+
+    // Borrado lógico; el valor por defecto permite que el data.sql y los registros previos queden activos
+    @ColumnDefault("true")
+    @jakarta.persistence.Column(nullable = false)
+    private boolean activo = true;
+
+    @jakarta.persistence.Column(name = "foto_perfil", length = 500)
+    private String fotoPerfil;
+
+    @jakarta.persistence.Column(length = 1000)
+    private String descripcion;
+
+    @jakarta.persistence.Column(name = "datos_pago", length = 500)
+    private String datosPago;
 
     public String getPassword() {
         return contrasena;

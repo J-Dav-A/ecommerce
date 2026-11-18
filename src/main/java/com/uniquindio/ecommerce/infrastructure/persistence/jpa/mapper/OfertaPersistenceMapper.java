@@ -18,6 +18,7 @@ public class OfertaPersistenceMapper {
         entity.setStock(oferta.getStock());
         entity.setPlataforma(oferta.getPlataforma());
         entity.setEstado(oferta.getEstado());
+        entity.setImagenes(new java.util.ArrayList<>(oferta.getImagenes()));
         return entity;
     }
 
@@ -29,7 +30,8 @@ public class OfertaPersistenceMapper {
                 new Precio(entity.getPrecio().getMonto(), entity.getPrecio().getMoneda()),
                 entity.getStock(),
                 entity.getPlataforma(),
-                entity.getEstado()
+                entity.getEstado(),
+                entity.getImagenes()
         );
     }
 }

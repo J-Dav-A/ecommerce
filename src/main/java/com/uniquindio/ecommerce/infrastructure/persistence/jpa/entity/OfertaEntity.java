@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "ofertas")
 @Getter @Setter
@@ -36,4 +39,10 @@ public class OfertaEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EstadoOferta estado;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "oferta_imagenes", joinColumns = @JoinColumn(name = "oferta_id"))
+    @OrderColumn(name = "orden")
+    @Column(name = "url", length = 500)
+    private List<String> imagenes = new ArrayList<>();
 }

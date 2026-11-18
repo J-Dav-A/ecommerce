@@ -1,0 +1,20 @@
+# Base de datos MariaDB para desarrollo. Uso:
+#   docker compose up -d
+#   .\gradlew bootRun --args='--spring.profiles.active=mariadb'
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: ecommerce-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ecommerce
+      MARIADB_USER: ecommerce
+      MARIADB_PASSWORD: ecommerce
+      MARIADB_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ecommerce-datos:/var/lib/mysql
+
+volumes:
+  ecommerce-datos:

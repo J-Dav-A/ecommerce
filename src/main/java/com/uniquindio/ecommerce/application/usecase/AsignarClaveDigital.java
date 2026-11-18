@@ -1,6 +1,7 @@
 package com.uniquindio.ecommerce.application.usecase;
 
 import com.uniquindio.ecommerce.domain.entity.ClaveDigital;
+import com.uniquindio.ecommerce.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.ecommerce.domain.repository.ClaveDigitalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ public class AsignarClaveDigital {
 
     @Transactional
     public ClaveDigital ejecutar(String claveId, String compradorId) {
-        ClaveDigital clave = repository.obtenerPorId(claveId).orElseThrow();
+        ClaveDigital clave = repository.obtenerPorId(claveId).orElseThrow(() -> new RecursoNoEncontradoException("La clave digital no existe"));
         clave.asignar(compradorId, Instant.now());
         repository.guardar(clave);
         return clave;

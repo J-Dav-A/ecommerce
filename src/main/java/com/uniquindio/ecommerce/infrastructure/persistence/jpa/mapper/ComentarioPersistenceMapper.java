@@ -12,7 +12,12 @@ public class ComentarioPersistenceMapper {
         entity.setId(comentario.getId());
         entity.setCompradorId(comentario.getCompradorId());
         entity.setOfertaId(comentario.getOfertaId());
+        entity.setCompraId(comentario.getCompraId());
         entity.setTexto(comentario.getTexto());
+        entity.setCalificacion(comentario.getCalificacion());
+        entity.setFecha(comentario.getFecha());
+        entity.setRespuesta(comentario.getRespuesta());
+        entity.setFechaRespuesta(comentario.getFechaRespuesta());
         return entity;
     }
 
@@ -21,7 +26,12 @@ public class ComentarioPersistenceMapper {
                 entity.getId(),
                 entity.getCompradorId(),
                 entity.getOfertaId(),
-                entity.getTexto()
+                entity.getCompraId(),
+                entity.getTexto(),
+                entity.getCalificacion(),
+                entity.getFecha(),
+                entity.getRespuesta(),
+                entity.getFechaRespuesta()
         );
     }
 }

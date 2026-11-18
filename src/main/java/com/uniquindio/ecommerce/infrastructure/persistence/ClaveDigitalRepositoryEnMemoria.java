@@ -24,6 +24,15 @@ public class ClaveDigitalRepositoryEnMemoria implements ClaveDigitalRepository {
     }
 
     @Override
+    public Optional<ClaveDigital> obtenerDeComprador(String ofertaId, String compradorId) {
+        return claves.values().stream()
+                .filter(c -> c.getOfertaId().equals(ofertaId)
+                        && compradorId.equals(c.getCompradorId())
+                        && (c.getEstado() == EstadoClaveDigital.ASIGNADA || c.getEstado() == EstadoClaveDigital.CANJEADA))
+                .findFirst();
+    }
+
+    @Override
     public void guardar(ClaveDigital clave) {
         claves.put(clave.getId(), clave);
     }

@@ -66,6 +66,16 @@ La clave de firma y la duración del token están en `application.properties` (`
 
 Reporte HTML en `build/reports/tests/test/index.html`.
 
+### Datos de demostración (para ver la paginación)
+
+Por defecto hay solo 2 ofertas. Para tener 14 ofertas (3 páginas de 6 en el catálogo) arranca con el perfil `demo`:
+
+```
+.\gradlew bootRun --args='--spring.profiles.active=demo'
+```
+
+Con el perfil `mariadb` las ofertas de demostración se cargan siempre (`data-demo-mariadb.sql`). Las pruebas automáticas no usan estos datos.
+
 ### Ejecutar con MariaDB (opcional)
 
 Por defecto la aplicación usa H2 en memoria (los datos se pierden al reiniciar). Para persistir los datos hay un perfil `mariadb`:

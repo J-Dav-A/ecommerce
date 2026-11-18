@@ -1,5 +1,6 @@
 # Base de datos MariaDB para desarrollo. Uso:
-#   docker compose up -d
+#   docker compose up -d   (se publica en el puerto 3307 para no chocar con un MariaDB local)
+#   $env:DB_URL="jdbc:mariadb://localhost:3307/ecommerce"
 #   .\gradlew bootRun --args='--spring.profiles.active=mariadb'
 services:
   mariadb:
@@ -12,7 +13,7 @@ services:
       MARIADB_PASSWORD: ecommerce
       MARIADB_ROOT_PASSWORD: root
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ecommerce-datos:/var/lib/mysql
 

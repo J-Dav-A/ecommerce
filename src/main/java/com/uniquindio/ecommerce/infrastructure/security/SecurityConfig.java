@@ -1,5 +1,6 @@
 package com.uniquindio.ecommerce.infrastructure.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.Customizer;
 import org.springframework.web.cors.CorsConfiguration;
@@ -24,6 +25,10 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    // Orígenes permitidos para CORS (separados por coma). Por defecto, el frontend local.
+    @Value("${app.cors.origenes:http://localhost:4200}")
+    private List<String> origenesPermitidos;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -42,7 +47,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuracion = new CorsConfiguration();
-        configuracion.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuracion.setAllowedOrigins(origenesPermitidos);
         configuracion.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuracion.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource fuente = new UrlBasedCorsConfigurationSource();
